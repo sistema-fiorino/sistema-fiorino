@@ -1,24 +1,70 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Cada usuário autenticado acessa somente seu próprio perfil.
+    function dono(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+    function fotoValida(data) {
+      return !('photoURL' in data) ||
+        (data.photoURL is string && data.photoURL.size() <= 150000);
+    }
+    function veiculoValido(data) {
+      return !('veiculoSelecionado' in data) ||
+        data.veiculoSelecionado in ['classica', 'moderna'];
+    }
     match /usuarios/{userId} {
-      allow create: if request.auth != null
-        && request.auth.uid == userId
+      allow read: if dono(userId);
+      allow create: if dono(userId)
+        && request.resource.data.keys().hasOnly([
+          'uid', 'nome', 'sobrenome', 'apelido',
+          'sexo', 'email', 'photoURL', 'criadoEm', 'veiculoSelecionado'
+        ])
+        && request.resource.data.keys().hasAll(['uid', 'email', 'criadoEm'])
         && request.resource.data.uid == userId
         && request.resource.data.email == request.auth.token.email
-        && request.resource.data.keys().hasOnly(["uid","nome","sobrenome","apelido","sexo","email","photoURL","criadoEm","veiculoSelecionado"])
-        && (!("veiculoSelecionado" in request.resource.data) || request.resource.data.veiculoSelecionado in ["classica","moderna"]);
-      allow read, delete: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null
-        && request.auth.uid == userId
-        && request.resource.data.uid == userId
-        && request.resource.data.email == request.auth.token.email;
+        && fotoValida(request.resource.data)
+        && veiculoValido(request.resource.data);
+      allow update: if dono(userId)
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.criadoEm == resource.data.criadoEm
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'nome', 'sobrenome', 'apelido', 'sexo',
+          'photoURL', 'veiculoSelecionado'
+        ])
+        && fotoValida(request.resource.data)
+        && veiculoValido(request.resource.data);
+      allow delete: if false;
     }
     match /usuarios/{userId}/{tipo}/{registroId} {
-      allow read, create, update, delete: if request.auth != null
-        && request.auth.uid == userId
-        && (tipo == "receitas" || tipo == "despesas");
+      allow read: if dono(userId) && tipo in ['receitas', 'despesas'];
+      allow create: if dono(userId)
+        && tipo in ['receitas', 'despesas']
+        && request.resource.data.keys().hasOnly([
+          'descricao', 'valor', 'data', 'cliente', 'categoria'
+        ])
+        && request.resource.data.descricao is string
+        && request.resource.data.descricao.size() > 0
+        && request.resource.data.descricao.size() <= 120
+        && request.resource.data.valor is number
+        && request.resource.data.valor > 0
+        && request.resource.data.valor < 1000000000
+        && request.resource.data.data is string
+        && (
+          (tipo == 'receitas'
+            && request.resource.data.keys().hasAll(['cliente'])
+            && request.resource.data.cliente is string
+            && request.resource.data.cliente.size() <= 100)
+          ||
+          (tipo == 'despesas'
+            && request.resource.data.keys().hasAll(['categoria'])
+            && request.resource.data.categoria in [
+              'Combustível', 'Manutenção', 'Pedágio',
+              'Alimentação', 'Seguro', 'Impostos e taxas', 'Outros'
+            ])
+        );
+      allow update: if false;
+      allow delete: if dono(userId) && tipo in ['receitas', 'despesas'];
     }
     match /{document=**} {
       allow read, write: if false;
