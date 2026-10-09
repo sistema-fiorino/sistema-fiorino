@@ -12,6 +12,29 @@ const firebaseConfig={
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const el=id=>document.getElementById(id), login=el("loginForm"),register=el("registerForm");
 let registering=false;
+const VEHICLES=Object.freeze({classica:{src:"assets/fiorino-classica.webp",label:"Fiorino clássica"},moderna:{src:"assets/fiorino-moderna.webp",label:"Fiorino moderna"}});
+let activeVehicle="classica";
+function renderVehicle(choice){
+ const next=Object.hasOwn(VEHICLES,choice)?choice:"classica";
+ activeVehicle=next;
+ const img=el("selectedVehicleImage");
+ if(img){img.src=VEHICLES[next].src;img.alt=VEHICLES[next].label+" escolhida para o painel";}
+ const input=document.querySelector('input[name="vehicleOption"][value="'+next+'"]');if(input)input.checked=true;
+}
+el("applyVehicle")?.addEventListener("click",async()=>{
+ const user=auth.currentUser,btn=el("applyVehicle"),status=el("vehicleStatus");
+ if(!user){status.textContent="Entre na conta para aplicar.";return}
+ const picked=document.querySelector('input[name="vehicleOption"]:checked')?.value;
+ if(!Object.hasOwn(VEHICLES,picked)){status.textContent="Selecione um modelo válido.";return}
+ btn.disabled=true;status.textContent="Salvando escolha…";
+ try{
+  await withTimeout(setDoc(doc(db,"usuarios",user.uid),{veiculoSelecionado:picked},{merge:true}),15000);
+  renderVehicle(picked);status.textContent="Veículo aplicado e salvo na sua conta.";
+ }catch(e){
+  status.textContent=e.code==="permission-denied"?"O Firestore bloqueou a alteração. Publique as regras atualizadas do perfil antes de tentar.":"Não foi possível salvar o veículo. Confira a conexão e tente novamente.";
+ }finally{btn.disabled=false}
+});
+
 const errorMessage=e=>({
  "auth/invalid-credential":"E-mail ou senha incorretos.","auth/invalid-email":"Informe um e-mail válido.",
  "auth/email-already-in-use":"Já existe uma conta com este e-mail.","auth/weak-password":"A senha precisa ter pelo menos 6 caracteres.",
@@ -100,6 +123,8 @@ function showApp(user,preferredName){
  el("accountEmail").textContent=user.email||"Sem e-mail";
  el("userName").textContent=name;
  el("profileDisplayName").textContent=name;
+ renderVehicle("classica");
+ el("vehicleStatus").textContent="";
  renderPhoto(user,user.photoURL,name);
  const photoStatus=el("profilePhotoStatus");
  if(photoStatus)photoStatus.textContent=user.photoURL?"":"Ainda não há uma foto salva neste perfil. Você pode adicionar uma aqui.";
@@ -107,6 +132,7 @@ function showApp(user,preferredName){
  getDoc(doc(db,"usuarios",user.uid)).then(snap=>{
   if(auth.currentUser?.uid!==user.uid||!snap.exists())return;
   const profile=snap.data();
+  renderVehicle(profile.veiculoSelecionado);
   const display=profile.apelido||profile.nome||name;
   el("userName").textContent=display;el("profileDisplayName").textContent=display;
   renderPhoto(user,profile.photoURL||user.photoURL,display);

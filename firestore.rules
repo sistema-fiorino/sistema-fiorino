@@ -6,7 +6,9 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.auth.uid == userId
         && request.resource.data.uid == userId
-        && request.resource.data.email == request.auth.token.email;
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.keys().hasOnly(["uid","nome","sobrenome","apelido","sexo","email","photoURL","criadoEm","veiculoSelecionado"])
+        && (!("veiculoSelecionado" in request.resource.data) || request.resource.data.veiculoSelecionado in ["classica","moderna"]);
       allow read, delete: if request.auth != null && request.auth.uid == userId;
       allow update: if request.auth != null
         && request.auth.uid == userId

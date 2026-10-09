@@ -62,3 +62,16 @@ body.fiorino2010 .fiorino-hero{display:flex;position:relative;overflow:hidden;mi
 #avatarInitials{overflow:hidden}#avatarInitials img,#profilePhotoPreview img{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}
 #saveProfilePhoto{margin-top:9px}
 @media(max-width:600px){body.fiorino2010 .fiorino-hero{min-height:145px;padding:15px}.fiorino-van{transform:scale(.55);transform-origin:right center;margin-right:-90px;margin-left:-48px}.fiorino-hero-copy strong{font-size:19px}.fiorino-hero-copy small{font-size:10px}}
+
+/* Veículos selecionáveis — fundo transparente e responsividade */
+.fiorino-vehicle-display{width:clamp(175px,30vw,350px);flex:0 0 auto;align-self:center;display:flex;align-items:center;justify-content:center;z-index:1}
+.fiorino-vehicle-display img{display:block;width:100%;height:auto;max-height:155px;object-fit:contain;filter:drop-shadow(7px 10px 3px #0008);image-rendering:auto}
+.vehicle-custom-card{grid-column:1/-1;align-items:stretch;text-align:left}
+.vehicle-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;width:100%;margin:16px 0}
+.vehicle-option{cursor:pointer;border:2px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;margin:0;background:var(--surface-soft)}
+.vehicle-option:has(input:checked){border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.vehicle-option input{width:auto;min-height:unset;align-self:flex-start;accent-color:var(--income)}
+.vehicle-option img{width:100%;height:125px;object-fit:contain;filter:drop-shadow(2px 5px 2px #0003)}
+.vehicle-option span{font-weight:700;font-size:13px}
+#applyVehicle{align-self:flex-start}
+@media(max-width:600px){.fiorino-vehicle-display{width:165px;position:absolute;right:7px;bottom:8px;opacity:.95}.fiorino-vehicle-display img{max-height:90px}.vehicle-options{grid-template-columns:1fr 1fr;gap:8px}.vehicle-option{padding:9px}.vehicle-option img{height:75px}.vehicle-option span{font-size:11px}}
