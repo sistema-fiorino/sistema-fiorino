@@ -28,7 +28,17 @@ el("applyVehicle")?.addEventListener("click",async()=>{
  if(!Object.hasOwn(VEHICLES,picked)){status.textContent="Selecione um modelo válido.";return}
  btn.disabled=true;status.textContent="Salvando escolha…";
  try{
-  await withTimeout(setDoc(doc(db,"usuarios",user.uid),{veiculoSelecionado:picked},{merge:true}),15000);
+  const profileRef=doc(db,"usuarios",user.uid);
+  const snapshot=await withTimeout(getDoc(profileRef),10000);
+  // Se o perfil ainda não existe, criar com os campos exigidos pelas regras.
+  const payload=snapshot.exists()?{veiculoSelecionado:picked}:{
+   uid:user.uid,email:user.email,
+   nome:user.displayName||user.email?.split("@")[0]||"Usuário",
+   sobrenome:"",apelido:"",sexo:"",criadoEm:new Date().toISOString(),
+   veiculoSelecionado:picked
+  };
+  await withTimeout(setDoc(profileRef,payload,{merge:true}),15000);
+  if(auth.currentUser?.uid!==user.uid)return;
   renderVehicle(picked);status.textContent="Veículo aplicado e salvo na sua conta.";
  }catch(e){
   status.textContent=e.code==="permission-denied"?"O Firestore bloqueou a alteração. Publique as regras atualizadas do perfil antes de tentar.":"Não foi possível salvar o veículo. Confira a conexão e tente novamente.";
