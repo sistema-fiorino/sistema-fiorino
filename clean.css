@@ -86,3 +86,7 @@ body.fiorino2010 .fiorino-vehicle-display img{display:block!important;visibility
 .vehicle-option img{height:65px;object-fit:contain}
 .vehicle-option span{font-size:12px}
 @media(max-width:700px){body.fiorino2010 .fiorino-hero{position:relative;min-height:190px;padding:16px;align-items:flex-start}body.fiorino2010 .fiorino-vehicle-display{position:absolute!important;right:12px!important;bottom:8px!important;width:175px;height:95px;flex:unset}body.fiorino2010 .fiorino-vehicle-display img{max-height:95px}.vehicle-custom-card{max-width:100%!important}.vehicle-option img{height:57px}}
+
+/* Equilibra somente a escala visual da Fiorino clássica (PNG com margens transparentes). */
+body.fiorino2010 .fiorino-vehicle-display img[src*="Vaneta Fiorino Branca em Pixel Art.png"]{transform:scale(1.25);transform-origin:center center}
+.vehicle-option img[src*="Vaneta Fiorino Branca em Pixel Art.png"]{transform:scale(1.25);transform-origin:center center}
