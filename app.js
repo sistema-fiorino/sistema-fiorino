@@ -7,7 +7,7 @@
   document.querySelectorAll('.page').forEach(node=>node.hidden=node.id!=='page-'+page);
   buttons.forEach(b=>b.dataset.page===page?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'));
   closeSettings(); window.scrollTo(0,0);
-  if(page==='financas') loadFinance();
+  if(page==='financas') window.loadFiorinoFinance?.();
  }
  buttons.forEach(b=>b.addEventListener('click',()=>open(b.dataset.page)));
  toggle?.addEventListener('click',e=>{e.stopPropagation();menu.hidden=!menu.hidden;toggle.setAttribute('aria-expanded',String(!menu.hidden))});
@@ -60,6 +60,7 @@
    }
    render();
   }
+  window.loadFiorinoFinance=loadFinance;
   function resetForm(){
    editingId='';form.reset();date.value=todayLocal;$('transactionId').value='';
    $('transactionFormTitle').textContent='Adicionar movimentação';
