@@ -29,21 +29,52 @@ function changeAuthForm(mode){
 }
 document.querySelectorAll("[data-auth]").forEach(b=>b.addEventListener("click",()=>changeAuthForm(b.dataset.auth)));
 function showLogin(){el("auth").hidden=false;el("app").hidden=true;el("authLoading").hidden=true;changeAuthForm("loginForm")}
+function renderPhoto(user,photoURL,name){
+ const src=photoURL||user.photoURL||"";
+ for(const id of ["avatarInitials","profilePhotoPreview"]){
+  const slot=el(id);if(!slot)continue;
+  slot.replaceChildren(document.createTextNode((name||"F")[0].toUpperCase()));
+  if(src){
+   const img=document.createElement("img");img.src=src;img.alt="Foto do perfil";img.decoding="async";img.referrerPolicy="no-referrer";
+   img.onerror=()=>{img.remove();};
+   slot.replaceChildren(img);
+  }
+ }
+}
 function showApp(user,preferredName){
  el("auth").hidden=true;el("app").hidden=false;
  const name=preferredName||user.displayName||user.email?.split("@")[0]||"usuário";
  el("accountEmail").textContent=user.email||"Sem e-mail";
  el("userName").textContent=name;
- const avatar=el("avatarInitials");avatar.textContent=name[0]?.toUpperCase()||"F";
- if(user.photoURL){const img=document.createElement("img");img.src=user.photoURL;img.alt="Foto de perfil";img.style.cssText="height:100%;width:100%;object-fit:cover;border-radius:50%";avatar.replaceChildren(img)}
- // Leitura opcional: nunca bloquear a abertura do sistema aguardando o Firestore.
+ el("profileDisplayName").textContent=name;
+ renderPhoto(user,user.photoURL,name);
+ // Dados do Firestore são opcionais: o painel abre imediatamente.
  getDoc(doc(db,"usuarios",user.uid)).then(snap=>{
   if(auth.currentUser?.uid!==user.uid||!snap.exists())return;
-  const p=snap.data(),display=p.apelido||p.nome||name;
-  el("userName").textContent=display;
-  if(!user.photoURL)el("avatarInitials").textContent=display[0]?.toUpperCase()||"F";
+  const profile=snap.data();
+  const display=profile.apelido||profile.nome||name;
+  el("userName").textContent=display;el("profileDisplayName").textContent=display;
+  renderPhoto(user,profile.photoURL||user.photoURL,display);
  }).catch(e=>console.warn("Perfil não disponível:",e.code));
 }
+el("saveProfilePhoto")?.addEventListener("click",async()=>{
+ const user=auth.currentUser,file=el("profilePhotoFile").files?.[0],status=el("profilePhotoStatus"),btn=el("saveProfilePhoto");
+ if(!user){status.textContent="Entre na sua conta para alterar a foto.";return}
+ if(!file){status.textContent="Selecione uma foto primeiro.";return}
+ if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>2*1024*1024){status.textContent="Use uma foto JPG, PNG ou WebP de até 2 MB.";return}
+ btn.disabled=true;status.textContent="Enviando foto…";
+ try{
+  const target=ref(storage,`usuarios/${user.uid}/perfil`);
+  await withTimeout(uploadBytes(target,file,{contentType:file.type}),20000);
+  const url=await withTimeout(getDownloadURL(target),12000);
+  await withTimeout(updateProfile(user,{photoURL:url}),12000);
+  renderPhoto(user,url,el("profileDisplayName").textContent);
+  status.textContent="Foto atualizada!";
+  setDoc(doc(db,"usuarios",user.uid),{photoURL:url},{merge:true}).catch(err=>console.warn("Foto não sincronizada no Firestore",err.code));
+ }catch(err){console.warn("Erro no envio de foto",err);status.textContent=err.message==="timeout"?"O envio demorou demais. Verifique o Storage e tente novamente.":"Não foi possível salvar a foto. Verifique se o Storage está ativo e suas permissões."}
+ finally{btn.disabled=false}
+});
+
 function withTimeout(promise,ms){
  let timeoutId;
  return Promise.race([promise,new Promise((_,reject)=>{timeoutId=setTimeout(()=>reject(new Error("timeout")),ms)})]).finally(()=>clearTimeout(timeoutId));

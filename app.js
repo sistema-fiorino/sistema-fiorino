@@ -15,8 +15,8 @@
  const collapse=document.getElementById('sidebarCollapse');
  collapse?.addEventListener('click',()=>{const collapsed=document.body.classList.toggle('sidebar-collapsed');collapse.setAttribute('aria-pressed',String(collapsed))});
  const themeSelect=document.getElementById('themeSelect');
- function setTheme(theme){document.body.classList.toggle('dark',theme==='escuro');document.documentElement.dataset.theme=theme;themeSelect.value=theme;localStorage.setItem('fiorino-theme',theme)}
+ function setTheme(theme){document.body.classList.toggle('dark',theme==='escuro');document.body.classList.toggle('fiorino2010',theme==='fiorino2010');document.documentElement.dataset.theme=theme;themeSelect.value=theme;localStorage.setItem('fiorino-theme',theme)}
  themeSelect?.addEventListener('change',e=>setTheme(e.target.value));
- setTheme(localStorage.getItem('fiorino-theme')==='escuro'?'escuro':'claro');
+ const saved=localStorage.getItem('fiorino-theme');setTheme(['claro','escuro','fiorino2010'].includes(saved)?saved:'claro');
  window.lucide?.createIcons(); open('inicio');
 })();
