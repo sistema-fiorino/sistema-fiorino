@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
 const firebaseConfig={
  apiKey:"AIzaSyBPWBB-vnsLjJbbEcYW2FKNtZBczZt6qs8",
  authDomain:"sistema-fiorino.firebaseapp.com",
@@ -10,7 +9,7 @@ const firebaseConfig={
  messagingSenderId:"793318262994",
  appId:"1:793318262994:web:455dd3abf23b573f19450b"
 };
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),storage=getStorage(app);
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const el=id=>document.getElementById(id), login=el("loginForm"),register=el("registerForm");
 let registering=false;
 const errorMessage=e=>({
@@ -37,56 +36,52 @@ function validatePhoto(file){
 }
 async function preparePhoto(file){
  validatePhoto(file);
- const url=URL.createObjectURL(file);
- let image;
- try{
-  image=await new Promise((resolve,reject)=>{
-   const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error("Não foi possível abrir a imagem. Escolha outra foto."));img.src=url;
-  });
-  const max=1200,scale=Math.min(1,max/Math.max(image.naturalWidth,image.naturalHeight));
-  const width=Math.max(1,Math.round(image.naturalWidth*scale));
-  const height=Math.max(1,Math.round(image.naturalHeight*scale));
-  const canvas=document.createElement("canvas");canvas.width=width;canvas.height=height;
-  const ctx=canvas.getContext("2d");if(!ctx)throw new Error("Navegador não conseguiu processar a imagem.");
-  ctx.drawImage(image,0,0,width,height);
-  const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",0.82));
-  if(!blob)throw new Error("Falha ao preparar a foto.");
-  return blob;
- }finally{URL.revokeObjectURL(url)}
+ const objectURL=URL.createObjectURL(file);
+ try {
+  const img=await Promise.race([
+   new Promise((resolve,reject)=>{
+    const picture=new Image();
+    picture.onload=()=>resolve(picture);
+    picture.onerror=()=>reject(new Error("Não foi possível abrir a imagem."));
+    picture.src=objectURL;
+   }),
+   new Promise((_,reject)=>setTimeout(()=>reject(new Error("Tempo excedido ao abrir a imagem.")),15000))
+  ]);
+  const maxSide=256,scale=Math.min(1,maxSide/Math.max(img.naturalWidth,img.naturalHeight));
+  const canvas=document.createElement("canvas");
+  canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
+  canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+  const ctx=canvas.getContext("2d");
+  if(!ctx)throw new Error("O navegador não conseguiu processar a imagem.");
+  ctx.drawImage(img,0,0,canvas.width,canvas.height);
+  // JPEG pequeno, sem Storage, dentro do limite de 1 MiB por documento Firestore.
+  let encoded=canvas.toDataURL("image/jpeg",0.72);
+  if(encoded.length>110000)encoded=canvas.toDataURL("image/jpeg",0.45);
+  if(encoded.length>110000)throw new Error("A foto ficou grande demais. Escolha outra imagem.");
+  return encoded;
+ }finally{URL.revokeObjectURL(objectURL)}
 }
-function storageFailure(error){
- if(error?.code==="storage/unauthorized")return "O Firebase Storage negou o acesso. Confirme se o Storage está criado e publique as regras do arquivo storage.rules.";
- if(error?.code==="storage/bucket-not-found"||error?.code==="storage/unknown"||error?.code==="storage/no-default-bucket")return "Verifique se o Firebase Storage foi criado e configurado.";
- if(error?.message==="timeout")return "O envio passou de 25 segundos e foi cancelado. Confira se o Storage está habilitado e com regras publicadas.";
- return error?.message?.startsWith("A imagem")||error?.message?.startsWith("Escolha")||error?.message?.startsWith("Falha")?error.message:"Não foi possível enviar a imagem. Verifique Firebase Storage e a conexão.";
+function photoError(error){
+ if(error?.code==="permission-denied")return "Firestore bloqueou o salvamento. Confira se publicou as regras de acesso ao próprio perfil.";
+ if(error?.code==="unavailable")return "Firestore indisponível. Confira a conexão e tente novamente.";
+ if(error?.message==="timeout")return "O Firestore demorou a responder. Confira o perfil antes de tentar salvar novamente.";
+ return error?.message||"Não foi possível salvar a foto no Firestore.";
 }
 async function savePhoto(user,file,onProgress){
- const prepared=await preparePhoto(file);
- onProgress?.("Enviando foto otimizada…");
- const target=ref(storage,`usuarios/${user.uid}/perfil.jpg`);
- const task=uploadBytesResumable(target,prepared,{contentType:"image/jpeg",cacheControl:"private,max-age=300"});
- // Temporizador com cancelamento real: evita operação presa indefinidamente.
- const uploaded=await new Promise((resolve,reject)=>{
-  let settled=false;
-  const timeout=setTimeout(()=>{if(settled)return;settled=true;task.cancel();reject(new Error("timeout"))},25000);
-  const finish=(error,snapshot)=>{
-   if(settled)return;settled=true;clearTimeout(timeout);
-   if(error)reject(error);else resolve(snapshot);
-  };
-  task.on("state_changed",snapshot=>{
-   const pct=Math.min(100,Math.round(snapshot.bytesTransferred/Math.max(1,snapshot.totalBytes)*100));
-   onProgress?.("Enviando foto: "+pct+"%…");
-  },error=>finish(error),()=>finish(null,task.snapshot));
- });
- onProgress?.("Finalizando foto…");
- const url=await withTimeout(getDownloadURL(uploaded.ref),12000);
- // URL antiga pode estar em cache; um parâmetro de versão força a imagem atualizada.
- const freshUrl=url+(url.includes("?")?"&":"?")+"v="+Date.now();
- await withTimeout(updateProfile(user,{photoURL:freshUrl}),12000);
- try{await withTimeout(setDoc(doc(db,"usuarios",user.uid),{photoURL:freshUrl},{merge:true}),10000)}
- catch(e){console.warn("Foto salva no Authentication; sincronização do Firestore pendente",e.code)}
- return freshUrl;
+ onProgress?.("Otimizando imagem para o Firestore…");
+ const photoData=await preparePhoto(file);
+ onProgress?.("Salvando foto no perfil…");
+ const profileRef=doc(db,"usuarios",user.uid);
+ // Evitar uma escrita em um campo não autorizado pelas regras: photoURL é aceito.
+ const existing=await withTimeout(getDoc(profileRef),10000);
+ const update=existing.exists()?{photoURL:photoData}:{
+  uid:user.uid,email:user.email,nome:user.displayName||user.email?.split("@")[0]||"Usuário",
+  sobrenome:"",apelido:"",sexo:"",criadoEm:new Date().toISOString(),photoURL:photoData
+ };
+ await withTimeout(setDoc(profileRef,update,{merge:true}),15000);
+ return photoData;
 }
+
 function renderPhoto(user,photoURL,name){
  const src=photoURL||user.photoURL||"";
  for(const id of ["avatarInitials","profilePhotoPreview"]){
@@ -128,7 +123,7 @@ el("saveProfilePhoto")?.addEventListener("click",async()=>{
   renderPhoto(user,photo,el("profileDisplayName").textContent);
   el("profilePhotoFile").value="";
   status.textContent="Foto salva e atualizada no topo e no perfil.";
- }catch(e){console.warn("Falha ao salvar a foto",e);status.textContent=storageFailure(e)}
+ }catch(e){console.warn("Falha ao salvar a foto",e);status.textContent=photoError(e)}
  finally{btn.disabled=false}
 });
 
@@ -154,7 +149,7 @@ register.addEventListener("submit",async e=>{
   showApp(user,displayName);
   // Firestore e Storage são complementares; não seguram a abertura do painel.
   const uploadStatus=el("profilePhotoStatus");
-  if(file&&uploadStatus)uploadStatus.textContent="Sua conta foi criada. Estamos enviando sua foto…";
+  if(file&&uploadStatus)uploadStatus.textContent="Sua conta foi criada. Estamos salvando sua foto…";
   void (async()=>{
    const problems=[];
    try{await withTimeout(updateProfile(user,{displayName}),12000)}catch(e){problems.push("nome de exibição");console.warn("Nome:",e)}
@@ -165,8 +160,9 @@ register.addEventListener("submit",async e=>{
     if(uploadStatus)uploadStatus.textContent="Foto de perfil salva com sucesso.";
    }catch(e){problems.push("foto");console.warn("Foto:",e);if(uploadStatus)uploadStatus.textContent=storageFailure(e)+" Você pode tentar novamente em Configurações."}}
    try{await withTimeout(setDoc(doc(db,"usuarios",user.uid),{
-    uid:user.uid,nome,sobrenome,apelido,sexo,email:user.email,photoURL,criadoEm:new Date().toISOString()
-   }),12000)}catch(e){problems.push("dados no Firestore");console.warn("Firestore:",e)}
+    uid:user.uid,nome,sobrenome,apelido,sexo,email:user.email,criadoEm:new Date().toISOString(),
+    ...(photoURL?{photoURL}:{})
+   },{merge:true}),12000)}catch(e){problems.push("dados no Firestore");console.warn("Firestore:",e)}
    if(problems.length)console.warn("Conta criada, mas faltou salvar:",problems.join(", ")); 
   })();
  }catch(e){

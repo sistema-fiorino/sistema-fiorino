@@ -37,3 +37,7 @@ Nenhuma conexão com o Firebase do NUNES Financeiro foi mantida; o repositório 
 ## Fotos de perfil
 
 O formulário aceita JPG, PNG ou WebP de até 100 MB como arquivo de origem. O navegador converte e reduz para JPEG (até 1200 px) antes de enviar. Para o upload funcionar, crie/habilite o Firebase Storage e publique o arquivo `storage.rules` no console do Firebase. A inclusão desse arquivo no GitHub **não publica** as regras automaticamente. O avatar só exibe a imagem depois que ela foi realmente enviada; contas antigas poderão precisar selecionar a foto novamente.
+
+
+## Foto de perfil sem Storage (plano Spark)
+A foto enviada pelo usuário é reduzida a JPEG de até 256 px e até 110 mil caracteres (Data URL). O aplicativo grava **somente no campo `photoURL` do próprio documento `usuarios/{uid}`** no Cloud Firestore. O acesso ao documento deve ficar restrito ao UID autenticado (sem regra pública). Não requer Cloud Storage. Não guardar imagem original de 100 MB no banco. Fotos anteriores que nunca foram armazenadas precisam ser reenviadas em Configurações.\n
