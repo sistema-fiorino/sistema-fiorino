@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
 const firebaseConfig={
  apiKey:"AIzaSyBPWBB-vnsLjJbbEcYW2FKNtZBczZt6qs8",
  authDomain:"sistema-fiorino.firebaseapp.com",
@@ -55,16 +55,30 @@ async function preparePhoto(file){
  }finally{URL.revokeObjectURL(url)}
 }
 function storageFailure(error){
- if(error?.code==="storage/unauthorized")return "Acesso ao Storage negado. Publique as regras de foto do Firebase e tente novamente.";
- if(error?.code==="storage/bucket-not-found"||error?.code==="storage/unknown")return "Verifique se o Firebase Storage foi criado e configurado.";
- if(error?.message==="timeout")return "A conexão demorou demais. Verifique a foto antes de tentar novamente.";
+ if(error?.code==="storage/unauthorized")return "O Firebase Storage negou o acesso. Confirme se o Storage está criado e publique as regras do arquivo storage.rules.";
+ if(error?.code==="storage/bucket-not-found"||error?.code==="storage/unknown"||error?.code==="storage/no-default-bucket")return "Verifique se o Firebase Storage foi criado e configurado.";
+ if(error?.message==="timeout")return "O envio passou de 25 segundos e foi cancelado. Confira se o Storage está habilitado e com regras publicadas.";
  return error?.message?.startsWith("A imagem")||error?.message?.startsWith("Escolha")||error?.message?.startsWith("Falha")?error.message:"Não foi possível enviar a imagem. Verifique Firebase Storage e a conexão.";
 }
 async function savePhoto(user,file,onProgress){
  const prepared=await preparePhoto(file);
  onProgress?.("Enviando foto otimizada…");
  const target=ref(storage,`usuarios/${user.uid}/perfil.jpg`);
- const uploaded=await withTimeout(uploadBytes(target,prepared,{contentType:"image/jpeg",cacheControl:"public,max-age=300"}),30000);
+ const task=uploadBytesResumable(target,prepared,{contentType:"image/jpeg",cacheControl:"private,max-age=300"});
+ // Temporizador com cancelamento real: evita operação presa indefinidamente.
+ const uploaded=await new Promise((resolve,reject)=>{
+  let settled=false;
+  const timeout=setTimeout(()=>{if(settled)return;settled=true;task.cancel();reject(new Error("timeout"))},25000);
+  const finish=(error,snapshot)=>{
+   if(settled)return;settled=true;clearTimeout(timeout);
+   if(error)reject(error);else resolve(snapshot);
+  };
+  task.on("state_changed",snapshot=>{
+   const pct=Math.min(100,Math.round(snapshot.bytesTransferred/Math.max(1,snapshot.totalBytes)*100));
+   onProgress?.("Enviando foto: "+pct+"%…");
+  },error=>finish(error),()=>finish(null,task.snapshot));
+ });
+ onProgress?.("Finalizando foto…");
  const url=await withTimeout(getDownloadURL(uploaded.ref),12000);
  // URL antiga pode estar em cache; um parâmetro de versão força a imagem atualizada.
  const freshUrl=url+(url.includes("?")?"&":"?")+"v="+Date.now();
@@ -109,10 +123,11 @@ el("saveProfilePhoto")?.addEventListener("click",async()=>{
  if(!user){status.textContent="Entre na sua conta para alterar a foto.";return}
  btn.disabled=true;
  try{
+  status.textContent="Preparando imagem…";
   const photo=await savePhoto(user,file,text=>status.textContent=text);
   renderPhoto(user,photo,el("profileDisplayName").textContent);
   el("profilePhotoFile").value="";
-  status.textContent="Foto salva! Ela já deve aparecer no topo e no perfil.";
+  status.textContent="Foto salva e atualizada no topo e no perfil.";
  }catch(e){console.warn("Falha ao salvar a foto",e);status.textContent=storageFailure(e)}
  finally{btn.disabled=false}
 });
