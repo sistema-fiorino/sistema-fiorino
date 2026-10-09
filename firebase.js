@@ -12,7 +12,7 @@ const firebaseConfig={
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const el=id=>document.getElementById(id), login=el("loginForm"),register=el("registerForm");
 let registering=false;
-const VEHICLES=Object.freeze({classica:{src:"assets/fiorino-classica.svg",label:"Fiorino clássica"},moderna:{src:"assets/fiorino-moderna.webp",label:"Fiorino moderna"}});
+const VEHICLES=Object.freeze({classica:{src:"assets/fiorino-classica.webp",label:"Fiorino clássica"},moderna:{src:"assets/fiorino-moderna.webp",label:"Fiorino moderna"}});
 let activeVehicle="classica";
 function renderVehicle(choice){
  const next=Object.hasOwn(VEHICLES,choice)?choice:"classica";
