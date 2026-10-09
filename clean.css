@@ -11,3 +11,13 @@ body{min-height:100vh}#app{display:block!important}.page[hidden]{display:none!im
 .sidebar-footer .settings-anchor{position:relative}.sidebar-footer .settings-menu[hidden]{display:none!important}
 @media(min-width:901px){.sidebar-footer .settings-menu{position:absolute;left:calc(100% + 12px);bottom:0}}
 @media(max-width:900px){.settings-grid{grid-template-columns:1fr}.settings-card{min-height:0}.login-box{padding:24px}}
+
+/* Formulários de login/cadastro Fiorino */
+.login-box form[hidden]{display:none!important}
+.login-box form>.link{display:block;margin:12px auto 0;text-align:center;width:auto}
+.login-box form input[type="file"]{font-size:13px}
+#registerForm .primary{margin-top:19px}
+#registerForm .muted{margin:5px 0 2px}
+#registrationNotice:empty{display:none}
+#registrationNotice{margin:12px 0 0}
+@media(max-width:520px){.auth-screen{padding:22px 14px}.login-heading h1{font-size:27px}.login-box{padding:22px}}
