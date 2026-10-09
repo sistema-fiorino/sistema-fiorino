@@ -13,6 +13,11 @@ service cloud.firestore {
         && request.resource.data.uid == userId
         && request.resource.data.email == request.auth.token.email;
     }
+    match /usuarios/{userId}/{tipo}/{registroId} {
+      allow read, create, update, delete: if request.auth != null
+        && request.auth.uid == userId
+        && (tipo == "receitas" || tipo == "despesas");
+    }
     match /{document=**} {
       allow read, write: if false;
     }
