@@ -36,7 +36,7 @@ function renderPhoto(user,photoURL,name){
   slot.replaceChildren(document.createTextNode((name||"F")[0].toUpperCase()));
   if(src){
    const img=document.createElement("img");img.src=src;img.alt="Foto do perfil";img.decoding="async";img.referrerPolicy="no-referrer";
-   img.onerror=()=>{img.remove();};
+   img.onerror=()=>{img.remove();const status=el("profilePhotoStatus");if(status)status.textContent="A foto cadastrada não pôde ser carregada. Selecione a imagem novamente e toque em Salvar foto.";};
    slot.replaceChildren(img);
   }
  }
@@ -48,6 +48,8 @@ function showApp(user,preferredName){
  el("userName").textContent=name;
  el("profileDisplayName").textContent=name;
  renderPhoto(user,user.photoURL,name);
+ const photoStatus=el("profilePhotoStatus");
+ if(photoStatus)photoStatus.textContent=user.photoURL?"":"Ainda não há uma foto salva neste perfil. Você pode adicionar uma aqui.";
  // Dados do Firestore são opcionais: o painel abre imediatamente.
  getDoc(doc(db,"usuarios",user.uid)).then(snap=>{
   if(auth.currentUser?.uid!==user.uid||!snap.exists())return;
@@ -55,6 +57,7 @@ function showApp(user,preferredName){
   const display=profile.apelido||profile.nome||name;
   el("userName").textContent=display;el("profileDisplayName").textContent=display;
   renderPhoto(user,profile.photoURL||user.photoURL,display);
+  if((profile.photoURL||user.photoURL)&&photoStatus)photoStatus.textContent="";
  }).catch(e=>console.warn("Perfil não disponível:",e.code));
 }
 el("saveProfilePhoto")?.addEventListener("click",async()=>{
@@ -95,7 +98,9 @@ register.addEventListener("submit",async e=>{
   const user=credential.user,displayName=apelido||nome;
   register.reset();
   showApp(user,displayName);
-  // Firestore e Storage são complementares; não seguram a tela no "Criando conta".
+  // Firestore e Storage são complementares; não seguram a abertura do painel.
+  const uploadStatus=el("profilePhotoStatus");
+  if(file&&uploadStatus)uploadStatus.textContent="Sua conta foi criada. Estamos enviando sua foto…";
   void (async()=>{
    const problems=[];
    try{await withTimeout(updateProfile(user,{displayName}),12000)}catch(e){problems.push("nome de exibição");console.warn("Nome:",e)}
@@ -105,7 +110,9 @@ register.addEventListener("submit",async e=>{
     await withTimeout(uploadBytes(location,file,{contentType:file.type}),15000);
     photoURL=await withTimeout(getDownloadURL(location),10000);
     await withTimeout(updateProfile(user,{photoURL}),10000);
-   }catch(e){problems.push("foto");console.warn("Foto:",e)}}
+    renderPhoto(user,photoURL,displayName);
+    if(uploadStatus)uploadStatus.textContent="Foto de perfil salva com sucesso.";
+   }catch(e){problems.push("foto");console.warn("Foto:",e);if(uploadStatus)uploadStatus.textContent="A conta foi criada, mas a foto não foi salva. Selecione a imagem novamente em Configurações → Minha conta.";}}
    try{await withTimeout(setDoc(doc(db,"usuarios",user.uid),{
     uid:user.uid,nome,sobrenome,apelido,sexo,email:user.email,photoURL,criadoEm:new Date().toISOString()
    }),12000)}catch(e){problems.push("dados no Firestore");console.warn("Firestore:",e)}
