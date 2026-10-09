@@ -32,3 +32,8 @@ Abra `http://localhost:8000`. Requer internet para carregar o SDK Firebase, a fo
 - `js/firebase.js`: configuração e inicialização do aplicativo Firebase.
 
 Nenhuma conexão com o Firebase do NUNES Financeiro foi mantida; o repositório original não foi modificado.
+
+
+## Fotos de perfil
+
+O formulário aceita JPG, PNG ou WebP de até 100 MB como arquivo de origem. O navegador converte e reduz para JPEG (até 1200 px) antes de enviar. Para o upload funcionar, crie/habilite o Firebase Storage e publique o arquivo `storage.rules` no console do Firebase. A inclusão desse arquivo no GitHub **não publica** as regras automaticamente. O avatar só exibe a imagem depois que ela foi realmente enviada; contas antigas poderão precisar selecionar a foto novamente.
