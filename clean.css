@@ -249,3 +249,6 @@ body.fiorino2010 #page-receitas .income-category-card{border-top-color:#f1b51d}
 
 
 #page-receitas .income-period-toolbar>#incomePeriodStatus:empty{display:none}
+
+/* Frete em destaque na primeira linha; demais receitas em duas colunas. */
+#page-receitas .income-category-grid > .income-category-card:first-child{grid-column:1/-1}
