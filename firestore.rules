@@ -1,91 +1,69 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function dono(userId) {
-      return request.auth != null && request.auth.uid == userId;
+    function dono(userId) { return request.auth != null && request.auth.uid == userId; }
+    function perfilValido(d) {
+      return d.keys().hasOnly(['uid','nome','sobrenome','apelido','sexo','email','photoURL','criadoEm','veiculoSelecionado'])
+        && d.get('nome','') is string && d.get('nome','').size() <= 80
+        && d.get('sobrenome','') is string && d.get('sobrenome','').size() <= 80
+        && d.get('apelido','') is string && d.get('apelido','').size() <= 80
+        && d.get('sexo','') in ['', 'feminino','masculino']
+        && d.get('photoURL','') is string && d.get('photoURL','').size() <= 150000
+        && d.get('veiculoSelecionado','classica') in ['classica','moderna'];
     }
-    function fotoValida(data) {
-      return !('photoURL' in data) ||
-        (data.photoURL is string && data.photoURL.size() <= 150000);
+    function dadosComuns(d) {
+      return d.keys().hasAll(['descricao','valor','data','categoria'])
+        && d.keys().hasOnly(['descricao','valor','data','categoria','cliente','combustivelTipo','precoLitro'])
+        && d.descricao is string && d.descricao.size() > 0 && d.descricao.size() <= 120
+        && d.valor is number && d.valor > 0 && d.valor < 1000000000
+        && d.data is string
+        && d.data.matches('^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$');
     }
-    function veiculoValido(data) {
-      return !('veiculoSelecionado' in data) ||
-        data.veiculoSelecionado in ['classica', 'moderna'];
+    function receitaValida(d) {
+      return d.categoria in ['Frete','Aporte de capital','Venda de bens','Reembolso','Outras entradas']
+        && !('combustivelTipo' in d) && !('precoLitro' in d)
+        && ((d.categoria == 'Frete' && d.get('cliente','') is string && d.get('cliente','').size() <= 100)
+          || (d.categoria != 'Frete' && !('cliente' in d)));
+    }
+    function despesaValida(d) {
+      return d.categoria in ['Combustível','Manutenção','Pedágio','Alimentação','Seguro','Impostos e taxas','Outros']
+        && !('cliente' in d)
+        && ((d.categoria == 'Combustível'
+          && d.keys().hasAll(['combustivelTipo','precoLitro'])
+          && d.combustivelTipo in ['Gasolina','Etanol']
+          && d.precoLitro is number && d.precoLitro > 0 && d.precoLitro < 1000)
+        || (d.categoria != 'Combustível' && !('combustivelTipo' in d) && !('precoLitro' in d)));
+    }
+    function registroValido(tipo,d) {
+      return dadosComuns(d)
+        && ((tipo == 'receitas' && receitaValida(d))
+          || (tipo == 'despesas' && despesaValida(d)));
     }
     match /usuarios/{userId} {
       allow read: if dono(userId);
       allow create: if dono(userId)
-        && request.resource.data.keys().hasOnly([
-          'uid', 'nome', 'sobrenome', 'apelido',
-          'sexo', 'email', 'photoURL', 'criadoEm', 'veiculoSelecionado'
-        ])
-        && request.resource.data.keys().hasAll(['uid', 'email', 'criadoEm'])
+        && request.resource.data.keys().hasAll(['uid','email','criadoEm'])
         && request.resource.data.uid == userId
         && request.resource.data.email == request.auth.token.email
-        && fotoValida(request.resource.data)
-        && veiculoValido(request.resource.data);
+        && perfilValido(request.resource.data);
       allow update: if dono(userId)
         && request.resource.data.uid == resource.data.uid
         && request.resource.data.email == resource.data.email
         && request.resource.data.criadoEm == resource.data.criadoEm
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'nome', 'sobrenome', 'apelido', 'sexo',
-          'photoURL', 'veiculoSelecionado'
-        ])
-        && fotoValida(request.resource.data)
-        && veiculoValido(request.resource.data);
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nome','sobrenome','apelido','sexo','photoURL','veiculoSelecionado'])
+        && perfilValido(request.resource.data);
       allow delete: if false;
     }
     match /usuarios/{userId}/{tipo}/{registroId} {
-      allow read: if dono(userId) && tipo in ['receitas', 'despesas'];
-      allow create: if dono(userId)
-        && tipo in ['receitas', 'despesas']
-        && request.resource.data.keys().hasOnly([
-          'descricao', 'valor', 'data', 'cliente', 'categoria', 'combustivelTipo', 'precoLitro'
-        ])
-        && request.resource.data.descricao is string
-        && request.resource.data.descricao.size() > 0
-        && request.resource.data.descricao.size() <= 120
-        && request.resource.data.valor is number
-        && request.resource.data.valor > 0
-        && request.resource.data.valor < 1000000000
-        && request.resource.data.data is string
-        && (
-          (tipo == 'receitas'
-            && (!('cliente' in request.resource.data) ||
-              (request.resource.data.cliente is string &&
-               request.resource.data.cliente.size() <= 100))
-            && !('combustivelTipo' in request.resource.data)
-            && !('precoLitro' in request.resource.data))
-          ||
-          (tipo == 'despesas'
-            && request.resource.data.keys().hasAll(['categoria'])
-            && request.resource.data.categoria in [
-              'Combustível', 'Manutenção', 'Pedágio',
-              'Alimentação', 'Seguro', 'Impostos e taxas', 'Outros'
-            ]
-            && (!('cliente' in request.resource.data))
-            && (
-              (request.resource.data.categoria == 'Combustível'
-                && request.resource.data.combustivelTipo in ['Gasolina', 'Etanol']
-                && request.resource.data.precoLitro is number
-                && request.resource.data.precoLitro > 0
-                && request.resource.data.precoLitro < 1000)
-              ||
-              (request.resource.data.categoria != 'Combustível'
-                && !('combustivelTipo' in request.resource.data)
-                && !('precoLitro' in request.resource.data))
-              ||
-              (request.resource.data.categoria == 'Combustível'
-                && !('combustivelTipo' in request.resource.data)
-                && !('precoLitro' in request.resource.data))
-            ))
-        );
-      allow update: if false;
-      allow delete: if dono(userId) && tipo in ['receitas', 'despesas'];
+      allow read: if dono(userId) && tipo in ['receitas','despesas'];
+      allow create: if dono(userId) && tipo in ['receitas','despesas']
+        && registroValido(tipo,request.resource.data);
+      allow update: if dono(userId) && tipo in ['receitas','despesas']
+        && request.resource.data.categoria == resource.data.categoria
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['descricao','valor','data','cliente','combustivelTipo','precoLitro'])
+        && registroValido(tipo,request.resource.data);
+      allow delete: if dono(userId) && tipo in ['receitas','despesas'];
     }
-    match /{document=**} {
-      allow read, write: if false;
-    }
+    match /{document=**} { allow read, write: if false; }
   }
 }
