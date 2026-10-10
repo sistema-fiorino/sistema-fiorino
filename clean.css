@@ -274,3 +274,15 @@ body.fiorino2010 #page-receitas .income-category-card{border-top-color:#f1b51d}
 .pixel-tuning .pixel-preview{grid-column:1/-1;display:grid;justify-items:center;gap:10px;padding:18px 12px;border-radius:12px;background:var(--surface-soft);border:1px solid var(--line);overflow:hidden;width:100%}
 .pixel-tuning .pixel-preview .fiorino-vehicle-display{width:min(100%,420px);min-height:180px;align-self:center;display:flex;align-items:center;justify-content:center}
 .pixel-tuning .pixel-preview .fiorino-vehicle-display img{max-height:180px;object-fit:contain}
+
+/* A escala da Fiorino clássica não deve cancelar os ajustes de suspensão. */
+body.fiorino2010 .fiorino-vehicle-display img[src*="Vaneta Fiorino Branca em Pixel Art.png"],
+body:not(.fiorino2010) .fiorino-vehicle-display img[src*="Vaneta Fiorino Branca em Pixel Art.png"]{
+ transform:translateY(var(--car-lift,0px)) rotate(var(--car-angle,0deg)) scale(1.25);
+ transform-origin:50% 75%;
+}
+/* A prévia segue a mesma transformação da Visão geral. */
+.pixel-tuning .pixel-preview .fiorino-vehicle-display img{
+ filter:var(--body-filter,none) drop-shadow(7px 10px 3px #0008);
+ image-rendering:pixelated;
+}
