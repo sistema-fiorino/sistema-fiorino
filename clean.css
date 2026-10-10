@@ -217,3 +217,35 @@ body.fiorino2010 #page-despesas .expenses-category-card{border-top-color:#f1b51d
 #page-despesas .expenses-period-wrap{display:flex;flex-direction:column;align-items:flex-start;gap:5px}
 #page-despesas .expenses-current-period{display:block;max-width:min(360px,calc(100vw - 50px));font-size:12px;font-weight:700;color:var(--text);line-height:1.4;overflow-wrap:anywhere}
 #page-despesas .expenses-period-toolbar>#expensesPeriodStatus:empty{display:none}
+
+#page-receitas .income-period-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0;padding:15px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+#page-receitas .income-period-wrap{position:relative}
+#page-receitas .income-period-picker{position:absolute;top:calc(100% + 8px);left:0;width:min(340px,calc(100vw - 45px));padding:16px;border:1px solid var(--line-strong);border-radius:12px;background:var(--surface);color:var(--text);box-shadow:0 12px 32px #0003;z-index:30}
+#page-receitas .income-period-picker[hidden],#page-receitas .income-year-options[hidden]{display:none}
+#page-receitas .income-year-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+#page-receitas .income-year-options{position:absolute;right:14px;top:56px;background:var(--surface);border:1px solid var(--line-strong);border-radius:10px;padding:8px;max-height:220px;overflow-y:auto;z-index:2;display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
+#page-receitas .income-year{padding:8px;border:0;background:var(--surface-soft);color:var(--text);border-radius:8px}
+#page-receitas .income-month-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:12px 0}
+#page-receitas .income-month{padding:10px 3px;background:var(--surface-soft);color:var(--text);border:1px solid var(--line);border-radius:9px}
+#page-receitas .income-month.selected{background:var(--accent-soft);border:2px solid var(--accent);font-weight:700}
+#page-receitas #incomeApplyPeriod{width:100%}
+#page-receitas .income-list-heading{margin:20px 0 12px}
+#page-receitas .income-category-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#page-receitas .income-category-card{padding:18px;min-width:0;border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:12px;background:var(--surface);box-shadow:var(--shadow-sm)}
+#page-receitas .income-category-heading{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+#page-receitas .income-category-heading b{font-size:clamp(17px,2vw,24px)}
+#page-receitas .income-category-card small{display:block;margin:8px 0;color:var(--muted)}
+#page-receitas .income-category-actions{display:flex;gap:8px;margin-top:12px}
+#page-receitas .income-details-dialog{position:fixed;inset:0;margin:auto;width:min(760px,calc(100% - 26px));max-height:min(85vh,900px);overflow:auto;padding:24px;border:1px solid var(--line-strong);border-radius:16px;background:var(--surface);color:var(--text);box-shadow:0 18px 65px #0006}
+#page-receitas .income-details-dialog::backdrop{background:#0009}
+#page-receitas .income-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#page-receitas .income-details-list{display:grid;gap:10px;margin-top:16px}
+#page-receitas .income-detail-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px;border:1px solid var(--line);border-radius:10px;overflow-wrap:anywhere}
+#page-receitas .income-detail-row>div{display:grid;gap:7px;min-width:0}
+#page-receitas .income-detail-row>div:last-child{justify-items:end}
+#page-receitas .income-detail-row small{color:var(--muted)}
+body.fiorino2010 #page-receitas .income-category-card{border-top-color:#f1b51d}
+@media(max-width:650px){#page-receitas .income-category-grid{grid-template-columns:1fr}#page-receitas .income-period-wrap{width:100%}#page-receitas .income-details-dialog{padding:15px}}
+
+
+#page-receitas .income-period-toolbar>#incomePeriodStatus:empty{display:none}
