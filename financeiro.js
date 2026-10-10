@@ -172,16 +172,17 @@ function syncReceitaCliente(){const show=$("receitaCategoria").value==="Frete";$
 $("receitaCategoria").addEventListener("change",syncReceitaCliente);
 syncReceitaCliente();
 for(const kind of ["receitas","despesas"]){
- const form=$(kind+"Form");form.addEventListener("submit",async ev=>{
+ const form=$(kind+"Form");form.addEventListener("invalid",ev=>{$(kind+"Status").textContent="Confira o campo "+(ev.target.labels?.[0]?.textContent||"obrigatório")+" antes de salvar.";},true);
+ form.addEventListener("submit",async ev=>{
   ev.preventDefault();if(!currentUid)return;
   const prefix=kind==="receitas"?"receita":"despesa";
   const value=Number($(prefix+"Valor").value),description=$(prefix+"Descricao").value.trim(),date=$(prefix+"Data").value;
-  if(!description||!date||!Number.isFinite(value)||value<=0)return;
+  if(!description||!date||!Number.isFinite(value)||value<=0){$(kind+"Status").textContent="Confira a descrição, o valor e a data.";return;}
   const data={descricao:description,valor:Math.round(value*100)/100,data:date};
   if(kind==="receitas"){data.categoria=$("receitaCategoria").value;if(data.categoria==="Frete")data.cliente=$("receitaCliente").value.trim();}else{data.categoria=$("despesaCategoria").value;if(data.categoria==="Combustível"){const preco=Number($("despesaPrecoLitro").value);if(!Number.isFinite(preco)||preco<=0){$("despesasStatus").textContent="Informe o preço do litro.";return;}data.combustivelTipo=$("despesaCombustivelTipo").value;data.precoLitro=preco;}}
   const button=form.querySelector('button[type="submit"]');button.disabled=true;$(kind+"Status").textContent="Salvando…";
   try{await withTimeout(addDoc(collection(db,"usuarios",currentUid,kind),data));form.reset();if(kind==="receitas")syncReceitaCliente();else syncFuelFields();$(prefix+"Data").value=new Date().toLocaleDateString("en-CA");$(kind+"Status").textContent="Lançamento salvo."}
-  catch(err){$(kind+"Status").textContent=err.message==="timeout"?"O banco demorou a responder. Confira a conexão e verifique se o registro foi salvo antes de tentar novamente.":"Falha ao salvar. Confira as regras e a criação do Firestore.";console.warn(err)}
+  catch(err){$(kind+"Status").textContent=err.message==="timeout"?"O banco demorou a responder. Confira a conexão e verifique se o registro foi salvo antes de tentar novamente.":"Falha ao salvar ("+(err.code||"erro de conexão")+"). Confira a conexão e as permissões.";console.warn(err)}
   finally{button.disabled=false}
  });
  const date=$(kind==="receitas"?"receitaData":"despesaData");date.value=new Date().toLocaleDateString("en-CA");
