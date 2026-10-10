@@ -80,7 +80,7 @@ function initExpensePicker(){
  setExpensePeriodStatus();
 }
 initExpensePicker();
-const incomeCategories=["Frete","Aporte de capital","Outros serviços","Venda de bens","Reembolso","Outras entradas"];
+const incomeCategories=["Frete","Aporte de capital","Venda de bens","Reembolso","Outras entradas"];
 const incomeMonths=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
 let incomeDraftYear=new Date().getFullYear(),incomeDraftMonths=new Set(),incomeAppliedPeriods=null;
 const incomeDate=e=>typeof e.data==="string"?e.data:"";
@@ -101,14 +101,14 @@ function fillIncomeDetails(category){
  $("incomeDetailsTitle").textContent=category;
  $("incomeDetailsPeriod").textContent="Período: "+incomePeriodLabel();
  const list=$("incomeDetailsList");list.replaceChildren();
- const items=entries.receitas.filter(e=>(incomeCategories.includes(e.categoria)?e.categoria:"Frete")===category&&incomeMatches(e)).sort((a,b)=>incomeDate(b).localeCompare(incomeDate(a)));
+ const items=entries.receitas.filter(e=>(e.categoria==="Outros serviços"?"Outras entradas":incomeCategories.includes(e.categoria)?e.categoria:"Frete")===category&&incomeMatches(e)).sort((a,b)=>incomeDate(b).localeCompare(incomeDate(a)));
  if(!items.length){const p=document.createElement("p");p.className="muted";p.textContent="Nenhuma receita nesse período.";list.append(p);}
  else items.forEach(item=>list.append(incomeItemRow(item)));
 }
 function renderIncomeCategories(){
  const root=$("receitasLista");root.replaceChildren();root.classList.add("income-category-grid");
  for(const category of incomeCategories){
-  const items=entries.receitas.filter(e=>(incomeCategories.includes(e.categoria)?e.categoria:"Frete")===category&&incomeMatches(e));
+  const items=entries.receitas.filter(e=>(e.categoria==="Outros serviços"?"Outras entradas":incomeCategories.includes(e.categoria)?e.categoria:"Frete")===category&&incomeMatches(e));
   const card=document.createElement("article");card.className="income-category-card";
   const heading=document.createElement("div"),title=document.createElement("strong"),total=document.createElement("b"),note=document.createElement("small"),actions=document.createElement("div");
   heading.className="income-category-heading";title.textContent=category;total.textContent=money(items.reduce((n,e)=>n+Number(e.valor||0),0));
