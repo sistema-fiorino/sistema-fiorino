@@ -302,3 +302,8 @@ body:not(.fiorino2010) .fiorino-vehicle-display.vehicle-modern-facing-left img{
 .pixel-tuning .pixel-preview{isolation:isolate}
 .pixel-tuning .pixel-preview .fiorino-vehicle-display{height:190px;min-height:190px;overflow:hidden}
 .pixel-tuning .pixel-preview .fiorino-vehicle-display img{max-height:150px;max-width:85%;width:auto;height:auto}
+
+/* Controles de suspensão verticais; topo = suspensão mais alta. */
+.pixel-tuning .pixel-height-control{align-items:center;justify-items:center;text-align:center;gap:10px}
+.pixel-tuning .pixel-height-control input[type="range"]{writing-mode:vertical-lr;direction:rtl;appearance:slider-vertical;-webkit-appearance:slider-vertical;width:28px;height:152px;min-height:152px;margin:0 auto;cursor:pointer}
+.pixel-tuning .pixel-height-control output{font-variant-numeric:tabular-nums}
