@@ -41,7 +41,7 @@ service cloud.firestore {
       allow create: if dono(userId)
         && tipo in ['receitas', 'despesas']
         && request.resource.data.keys().hasOnly([
-          'descricao', 'valor', 'data', 'cliente', 'categoria'
+          'descricao', 'valor', 'data', 'cliente', 'categoria', 'combustivelTipo', 'precoLitro'
         ])
         && request.resource.data.descricao is string
         && request.resource.data.descricao.size() > 0
@@ -52,16 +52,34 @@ service cloud.firestore {
         && request.resource.data.data is string
         && (
           (tipo == 'receitas'
-            && request.resource.data.keys().hasAll(['cliente'])
-            && request.resource.data.cliente is string
-            && request.resource.data.cliente.size() <= 100)
+            && (!('cliente' in request.resource.data) ||
+              (request.resource.data.cliente is string &&
+               request.resource.data.cliente.size() <= 100))
+            && !('combustivelTipo' in request.resource.data)
+            && !('precoLitro' in request.resource.data))
           ||
           (tipo == 'despesas'
             && request.resource.data.keys().hasAll(['categoria'])
             && request.resource.data.categoria in [
               'Combustível', 'Manutenção', 'Pedágio',
               'Alimentação', 'Seguro', 'Impostos e taxas', 'Outros'
-            ])
+            ]
+            && (!('cliente' in request.resource.data))
+            && (
+              (request.resource.data.categoria == 'Combustível'
+                && request.resource.data.combustivelTipo in ['Gasolina', 'Etanol']
+                && request.resource.data.precoLitro is number
+                && request.resource.data.precoLitro > 0
+                && request.resource.data.precoLitro < 1000)
+              ||
+              (request.resource.data.categoria != 'Combustível'
+                && !('combustivelTipo' in request.resource.data)
+                && !('precoLitro' in request.resource.data))
+              ||
+              (request.resource.data.categoria == 'Combustível'
+                && !('combustivelTipo' in request.resource.data)
+                && !('precoLitro' in request.resource.data))
+            ))
         );
       allow update: if false;
       allow delete: if dono(userId) && tipo in ['receitas', 'despesas'];
