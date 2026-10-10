@@ -90,3 +90,47 @@ body.fiorino2010 .fiorino-vehicle-display img{display:block!important;visibility
 /* Equilibra somente a escala visual da Fiorino clássica (PNG com margens transparentes). */
 body.fiorino2010 .fiorino-vehicle-display img[src*="Vaneta Fiorino Branca em Pixel Art.png"]{transform:scale(1.25);transform-origin:center center}
 .vehicle-option img[src*="Vaneta Fiorino Branca em Pixel Art.png"]{transform:scale(1.25);transform-origin:center center}
+
+/* Todos os temas usam a mesma estrutura de painel/galeria Fiorino 2010;
+   apenas as cores diferem de acordo com o tema selecionado. */
+body:not(.fiorino2010) .fiorino-hero{
+ display:flex;position:relative;overflow:hidden;min-height:210px;
+ border-radius:12px;margin:9px 0 24px;padding:22px 28px;
+ background:repeating-linear-gradient(130deg,#262d31 0,#262d31 18px,#2c3438 18px,#2c3438 20px);
+ color:#fff;border-bottom:7px solid var(--accent);
+ align-items:center;justify-content:space-between;
+}
+body.dark:not(.fiorino2010) .fiorino-hero{
+ background:repeating-linear-gradient(130deg,#171d20 0,#171d20 18px,#20282b 18px,#20282b 20px);
+}
+body:not(.fiorino2010) .fiorino-hero-copy span{color:var(--accent)}
+body:not(.fiorino2010) .finance-metric{border-top:4px solid var(--accent)}
+body:not(.fiorino2010) .finance-form,
+body:not(.fiorino2010) .finance-entry,
+body:not(.fiorino2010) .blank-panel{border-radius:10px}
+body:not(.fiorino2010) .topbar{border-bottom:3px solid var(--accent)}
+body:not(.fiorino2010) .fiorino-vehicle-display{
+ display:flex;position:relative!important;top:auto!important;right:auto!important;
+ bottom:auto!important;left:auto!important;opacity:1!important;transform:none!important;
+ width:min(32vw,360px);height:170px;flex:0 0 min(32vw,360px);
+ margin:0;align-items:center;justify-content:center;
+}
+body:not(.fiorino2010) .fiorino-vehicle-display img{
+ display:block!important;visibility:visible!important;opacity:1!important;
+ width:100%;height:100%;max-height:170px;object-fit:contain;
+}
+/* A proporção visual da clássica acompanha a configuração existente,
+   sem aumentar ou alterar a moderna. */
+body:not(.fiorino2010) .fiorino-vehicle-display img[src*="Vaneta Fiorino Branca em Pixel Art.png"]{
+ transform:scale(1.25);transform-origin:center center;
+}
+@media(max-width:700px){
+ body:not(.fiorino2010) .fiorino-hero{
+  position:relative;min-height:190px;padding:16px;align-items:flex-start;
+ }
+ body:not(.fiorino2010) .fiorino-vehicle-display{
+  position:absolute!important;right:12px!important;bottom:8px!important;
+  width:175px;height:95px;flex:unset;
+ }
+ body:not(.fiorino2010) .fiorino-vehicle-display img{max-height:95px}
+}
