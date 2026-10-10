@@ -162,3 +162,7 @@ body:not(.fiorino2010) .fiorino-vehicle-display img[src*="Vaneta Fiorino Branca 
 /* Alinha contador e legenda dos fretes em uma linha discreta. */
 #page-receitas .fretes-count-inline{display:flex;align-items:baseline;gap:4px;flex-wrap:wrap;font-size:12px;font-weight:400;line-height:1.4;color:var(--muted);margin-top:9px}
 #page-receitas .fretes-count-inline #fretesCount{display:inline;font:inherit;font-size:inherit;font-weight:inherit;color:inherit;margin:0}
+
+/* Restaura a borda superior na cor do tema, sem alterar as demais bordas. */
+#page-receitas .finance-summary .finance-metric{border-top:4px solid var(--accent)}
+body.fiorino2010 #page-receitas .finance-summary .finance-metric{border-top-color:#f1b51d}
