@@ -162,14 +162,14 @@ function renderFuelBestPrices(){
 const moneyInputs=["receitaValor","despesaValor","despesaPrecoLitro"];
 const inputMoneyFormat=digits=>(Number(digits||"0")/100).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
 function readInputMoney(id){
- const digits=$(id).value.replace(/\\D/g,"");
+ const digits=$(id).value.replace(/\D/g,"");
  return Number(digits||"0")/100;
 }
 function resetInputMoney(kind){$(kind==="receitas"?"receitaValor":"despesaValor").value="0,00";if(kind==="despesas")$("despesaPrecoLitro").value="0,00";}
 for(const id of moneyInputs){
  const el=$(id);
  el.addEventListener("input",()=>{
-  const digits=el.value.replace(/\\D/g,"").slice(-11);
+  const digits=el.value.replace(/\D/g,"").slice(-11);
   el.value=inputMoneyFormat(digits);
   el.setSelectionRange(el.value.length,el.value.length);
  });
