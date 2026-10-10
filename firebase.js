@@ -14,18 +14,45 @@ const el=id=>document.getElementById(id), login=el("loginForm"),register=el("reg
 let registering=false;
 const VEHICLES=Object.freeze({classica:{src:"assets/Vaneta Fiorino Branca em Pixel Art.png",label:"Fiorino clássica"},moderna:{src:"assets/fiorino-moderna.webp",label:"Fiorino moderna"}});
 let activeVehicle="classica";
+// Camadas SVG são usadas apenas na Fiorino clássica; a arte original não é alterada.
+function ensureClassicLayers(image){
+ if(!image?.parentElement)return;
+ const host=image.parentElement;
+ let svg=host.querySelector(".fiorino-classic-layers");
+ if(svg)return svg;
+ const id=image.id==="pixelPreviewImage"?"preview":"dashboard";
+ const ns="http://www.w3.org/2000/svg";
+ svg=document.createElementNS(ns,"svg");
+ svg.setAttribute("viewBox","0 0 1672 941");
+ svg.setAttribute("preserveAspectRatio","xMidYMid meet");
+ svg.setAttribute("aria-label","Fiorino clássica com carroceria ajustável e rodas fixas");
+ svg.classList.add("fiorino-classic-layers");
+ // Primeiro os pneus (fixos), depois o chassi recortado (móvel).
+ svg.innerHTML=`<defs>
+ <clipPath id="fiorino-wheels-${id}" clipPathUnits="userSpaceOnUse"><ellipse cx="323" cy="722" rx="118" ry="128"/><ellipse cx="1266" cy="722" rx="116" ry="127"/></clipPath>
+ <mask id="fiorino-body-${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="1672" height="941"><rect width="1672" height="941" fill="white"/><ellipse cx="323" cy="722" rx="118" ry="128" fill="black"/><ellipse cx="1266" cy="722" rx="116" ry="127" fill="black"/></mask>
+ </defs>
+ <image class="fiorino-fixed-wheels" href="assets/Vaneta Fiorino Branca em Pixel Art.png" width="1672" height="941" clip-path="url(#fiorino-wheels-${id})"/>
+ <g class="fiorino-moving-body" mask="url(#fiorino-body-${id})"><image href="assets/Vaneta Fiorino Branca em Pixel Art.png" width="1672" height="941"/></g>`;
+ host.append(svg);
+ return svg;
+}
 function renderVehicle(choice){
  const next=Object.hasOwn(VEHICLES,choice)?choice:"classica";
  activeVehicle=next;
- // A mesma orientação e escala valem para o painel e a prévia nas configurações.
  for(const id of ["selectedVehicleImage","pixelPreviewImage"]){
   const image=el(id);
-  if(image?.parentElement){image.parentElement.classList.toggle("vehicle-modern-facing-left",next==="moderna");}
+  if(!image?.parentElement)continue;
+  image.parentElement.classList.toggle("vehicle-modern-facing-left",next==="moderna");
+  const layers=ensureClassicLayers(image);
+  const classic=next==="classica";
+  if(layers)layers.style.setProperty("display",classic?"block":"none","important");
+  image.style.setProperty("display",classic?"none":"block","important");
+  image.src=VEHICLES[next].src;
+  image.alt=VEHICLES[next].label+(id==="pixelPreviewImage"?" em prévia":" escolhida para o painel");
  }
- const img=el("selectedVehicleImage");
- if(img){img.src=VEHICLES[next].src;img.alt=VEHICLES[next].label+" escolhida para o painel";} 
- const preview=el("pixelPreviewImage");if(preview){preview.src=VEHICLES[next].src;preview.alt="Prévia da personalização: "+VEHICLES[next].label;}
- const input=document.querySelector('input[name="vehicleOption"][value="'+next+'"]');if(input)input.checked=true;
+ const input=document.querySelector('input[name="vehicleOption"][value="'+next+'"]');
+ if(input)input.checked=true;
 }
 el("applyVehicle")?.addEventListener("click",async()=>{
  const user=auth.currentUser,btn=el("applyVehicle"),status=el("vehicleStatus");
@@ -234,7 +261,7 @@ function applyPixelTuning(){
  el("pixelFrontValue").textContent=String(front);el("pixelRearValue").textContent=String(rear);
  try{localStorage.setItem("fiorino-pixel-tuning",JSON.stringify({body,tint:String(tint),front:String(front),rear:String(rear)}));}catch(e){}
 }
-try{const saved=JSON.parse(localStorage.getItem("fiorino-pixel-tuning")||"{}");for(const [id,key] of [["pixelBodyColor","body"],["pixelWindowTint","tint"],["pixelFrontHeight","front"],["pixelRearHeight","rear"]]){const field=el(id);if(field&&saved[key]!=null&&[...field.options||[]].some?.(o=>o.value===saved[key]))field.value=saved[key];else if(field&&field.type==="range"&&Number(saved[key])>=-3&&Number(saved[key])<=3)field.value=saved[key];}}catch(e){}
+try{const saved=JSON.parse(localStorage.getItem("fiorino-pixel-tuning")||"{}");for(const [id,key] of [["pixelBodyColor","body"],["pixelWindowTint","tint"],["pixelFrontHeight","front"],["pixelRearHeight","rear"]]){const field=el(id);if(field&&saved[key]!=null&&[...field.options||[]].some?.(o=>o.value===saved[key]))field.value=saved[key];else if(field&&field.type==="range"&&Number.isFinite(Number(saved[key]))&&Number(saved[key])>=-10&&Number(saved[key])<=10)field.value=saved[key];}}catch(e){}
 for(const id of ["pixelBodyColor","pixelWindowTint","pixelFrontHeight","pixelRearHeight"])el(id)?.addEventListener("input",applyPixelTuning);
 el("pixelReset")?.addEventListener("click",()=>{el("pixelBodyColor").value="original";el("pixelWindowTint").value="0";el("pixelFrontHeight").value="0";el("pixelRearHeight").value="0";applyPixelTuning();});
 applyPixelTuning();

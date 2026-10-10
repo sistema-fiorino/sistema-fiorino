@@ -307,3 +307,24 @@ body:not(.fiorino2010) .fiorino-vehicle-display.vehicle-modern-facing-left img{
 .pixel-tuning .pixel-height-control{align-items:center;justify-items:center;text-align:center;gap:10px}
 .pixel-tuning .pixel-height-control input[type="range"]{writing-mode:vertical-lr;direction:rtl;appearance:slider-vertical;-webkit-appearance:slider-vertical;width:28px;height:152px;min-height:152px;margin:0 auto;cursor:pointer}
 .pixel-tuning .pixel-height-control output{font-variant-numeric:tabular-nums}
+
+/* Clássica em camadas: pneu permanece fixo, arco/lataria se movem na frente. */
+.fiorino-vehicle-display .fiorino-classic-layers{
+ display:block;width:100%;height:100%;max-height:170px;overflow:visible;
+ transform:scale(1.25);transform-origin:center center;
+ filter:drop-shadow(7px 10px 3px #0007);
+ image-rendering:pixelated;
+}
+.fiorino-vehicle-display .fiorino-classic-layers .fiorino-moving-body{
+ transform:translateY(var(--car-lift,0px)) rotate(var(--car-angle,0deg));
+ transform-origin:50% 75%;
+ transform-box:view-box;
+}
+/* O filtro atual é só uma simulação; não recolorimos os pneus fixos. */
+.fiorino-vehicle-display .fiorino-classic-layers .fiorino-moving-body image{filter:var(--body-filter,none)}
+.pixel-tuning .pixel-preview .fiorino-classic-layers{
+ width:85%;height:150px;max-height:150px;flex:0 0 auto;
+}
+@media(max-width:700px){
+ .fiorino-hero .fiorino-vehicle-display .fiorino-classic-layers{max-height:95px}
+}
