@@ -17,6 +17,11 @@ let activeVehicle="classica";
 function renderVehicle(choice){
  const next=Object.hasOwn(VEHICLES,choice)?choice:"classica";
  activeVehicle=next;
+ // A mesma orientação e escala valem para o painel e a prévia nas configurações.
+ for(const id of ["selectedVehicleImage","pixelPreviewImage"]){
+  const image=el(id);
+  if(image?.parentElement){image.parentElement.classList.toggle("vehicle-modern-facing-left",next==="moderna");}
+ }
  const img=el("selectedVehicleImage");
  if(img){img.src=VEHICLES[next].src;img.alt=VEHICLES[next].label+" escolhida para o painel";} 
  const preview=el("pixelPreviewImage");if(preview){preview.src=VEHICLES[next].src;preview.alt="Prévia da personalização: "+VEHICLES[next].label;}
