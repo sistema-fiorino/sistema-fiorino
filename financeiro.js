@@ -111,7 +111,7 @@ function renderIncomeCategories(){
   const items=entries.receitas.filter(e=>(e.categoria==="Outros serviços"?"Outras entradas":incomeCategories.includes(e.categoria)?e.categoria:"Frete")===category&&incomeMatches(e));
   const card=document.createElement("article");card.className="income-category-card";
   const heading=document.createElement("div"),title=document.createElement("strong"),total=document.createElement("b"),note=document.createElement("small"),actions=document.createElement("div");
-  heading.className="income-category-heading";title.textContent=category;total.textContent=money(items.reduce((n,e)=>n+Number(e.valor||0),0));
+  heading.className="income-category-heading";title.textContent=category==="Frete"?"Fretes":category;total.textContent=money(items.reduce((n,e)=>n+Number(e.valor||0),0));
   note.textContent=items.length+" lançamento"+(items.length===1?"":"s");actions.className="income-category-actions";
   const open=makeIncomeButton("Abrir receita","soft",()=>{$("incomeDetailsDialog").showModal();fillIncomeDetails(category);});
   actions.append(open);heading.append(title,total);card.append(heading,note,actions);root.append(card);
