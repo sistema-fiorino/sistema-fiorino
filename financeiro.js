@@ -165,7 +165,7 @@ function readInputMoney(id){
  const digits=$(id).value.replace(/\\D/g,"");
  return Number(digits||"0")/100;
 }
-function resetInputMoney(){for(const id of moneyInputs)$(id).value="0,00";}
+function resetInputMoney(kind){$(kind==="receitas"?"receitaValor":"despesaValor").value="0,00";if(kind==="despesas")$("despesaPrecoLitro").value="0,00";}
 for(const id of moneyInputs){
  const el=$(id);
  el.addEventListener("input",()=>{
@@ -201,7 +201,7 @@ for(const kind of ["receitas","despesas"]){
   const data={descricao:description,valor:Math.round(value*100)/100,data:date};
   if(kind==="receitas"){data.categoria=$("receitaCategoria").value;if(data.categoria==="Frete")data.cliente=$("receitaCliente").value.trim();}else{data.categoria=$("despesaCategoria").value;if(data.categoria==="Combustível"){const preco=readInputMoney("despesaPrecoLitro");if(!Number.isFinite(preco)||preco<=0){$("despesasStatus").textContent="Informe o preço do litro.";return;}data.combustivelTipo=$("despesaCombustivelTipo").value;data.precoLitro=preco;}}
   const button=form.querySelector('button[type="submit"]');button.disabled=true;$(kind+"Status").textContent="Salvando…";
-  try{await withTimeout(addDoc(collection(db,"usuarios",currentUid,kind),data));form.reset();resetInputMoney();if(kind==="receitas")syncReceitaCliente();else syncFuelFields();$(prefix+"Data").value=new Date().toLocaleDateString("en-CA");$(kind+"Status").textContent="Lançamento salvo."}
+  try{await withTimeout(addDoc(collection(db,"usuarios",currentUid,kind),data));form.reset();resetInputMoney(kind);if(kind==="receitas")syncReceitaCliente();else syncFuelFields();$(prefix+"Data").value=new Date().toLocaleDateString("en-CA");$(kind+"Status").textContent="Lançamento salvo."}
   catch(err){$(kind+"Status").textContent=err.message==="timeout"?"O banco demorou a responder. Confira a conexão e verifique se o registro foi salvo antes de tentar novamente.":"Falha ao salvar ("+(err.code||"erro de conexão")+"). Confira a conexão e as permissões.";console.warn(err)}
   finally{button.disabled=false}
  });
