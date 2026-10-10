@@ -39,7 +39,8 @@ function expenseItemRow(item){
  name.textContent=item.descricao||"Sem descrição";date.textContent=expenseDate(item).split("-").reverse().join("/");if(item.categoria==="Combustível"&&Number(item.precoLitro)>0)date.textContent+=" • "+money(item.precoLitro)+"/litro";amount.textContent=money(item.valor);
  const remove=makeExpenseButton("Excluir","finance-delete",async()=>{if(!confirm("Excluir somente este lançamento?"))return;remove.disabled=true;try{await withTimeout(deleteDoc(doc(db,"usuarios",currentUid,"despesas",item.id)))}catch(err){alert("Não foi possível excluir o lançamento.");remove.disabled=false;}});
  const edit=document.createElement("button");edit.type="button";edit.className="finance-edit-button";edit.textContent="Editar";edit.addEventListener("click",()=>openEditEntry("despesas",item));
- left.append(name,date);right.append(amount,edit,remove);row.append(left,right);return row;
+ const actions=document.createElement("div");actions.className="finance-detail-actions";actions.append(edit,remove);
+ left.append(name,date);right.append(amount,actions);row.append(left,right);return row;
 }
 let openExpenseCategory=null;
 function fillExpenseDetails(category){
@@ -95,7 +96,8 @@ function incomeItemRow(item){
  name.textContent=item.descricao||"Sem descrição";date.textContent=incomeDate(item).split("-").reverse().join("/");if((!item.categoria||item.categoria==="Frete")&&item.cliente?.trim())date.textContent+=" • Cliente: "+item.cliente.trim();amount.textContent=money(item.valor);
  const remove=makeIncomeButton("Excluir","finance-delete",async()=>{if(!confirm("Excluir somente este lançamento?"))return;remove.disabled=true;try{await withTimeout(deleteDoc(doc(db,"usuarios",currentUid,"receitas",item.id)))}catch(err){alert("Não foi possível excluir o lançamento.");remove.disabled=false;}});
  const edit=document.createElement("button");edit.type="button";edit.className="finance-edit-button";edit.textContent="Editar";edit.addEventListener("click",()=>openEditEntry("receitas",item));
- left.append(name,date);right.append(amount,edit,remove);row.append(left,right);return row;
+ const actions=document.createElement("div");actions.className="finance-detail-actions";actions.append(edit,remove);
+ left.append(name,date);right.append(amount,actions);row.append(left,right);return row;
 }
 let openIncomeCategory=null;
 function fillIncomeDetails(category){
