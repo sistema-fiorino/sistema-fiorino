@@ -158,6 +158,26 @@ function renderFuelBestPrices(){
   card.append(title,price,detail);root.append(card);
  }
 }
+// Campos monetários com centavos automáticos; os números gravados no Firestore não são strings.
+const moneyInputs=["receitaValor","despesaValor","despesaPrecoLitro"];
+const inputMoneyFormat=digits=>(Number(digits||"0")/100).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+function readInputMoney(id){
+ const digits=$(id).value.replace(/\\D/g,"");
+ return Number(digits||"0")/100;
+}
+function resetInputMoney(){for(const id of moneyInputs)$(id).value="0,00";}
+for(const id of moneyInputs){
+ const el=$(id);
+ el.addEventListener("input",()=>{
+  const digits=el.value.replace(/\\D/g,"").slice(-11);
+  el.value=inputMoneyFormat(digits);
+  el.setSelectionRange(el.value.length,el.value.length);
+ });
+ el.addEventListener("focus",()=>el.setSelectionRange(el.value.length,el.value.length));
+ el.addEventListener("keydown",event=>{
+  if(event.key==="Delete"){event.preventDefault();el.value="0,00";}
+ });
+}
 function syncFuelFields(){
  const fuel=$("despesaCategoria").value==="Combustível";
  $("despesaDescricaoLabel").textContent=fuel?"Nome do posto":"Descrição";
@@ -176,12 +196,12 @@ for(const kind of ["receitas","despesas"]){
  form.addEventListener("submit",async ev=>{
   ev.preventDefault();if(!currentUid)return;
   const prefix=kind==="receitas"?"receita":"despesa";
-  const value=Number($(prefix+"Valor").value),description=$(prefix+"Descricao").value.trim(),date=$(prefix+"Data").value;
+  const value=readInputMoney(prefix+"Valor"),description=$(prefix+"Descricao").value.trim(),date=$(prefix+"Data").value;
   if(!description||!date||!Number.isFinite(value)||value<=0){$(kind+"Status").textContent="Confira a descrição, o valor e a data.";return;}
   const data={descricao:description,valor:Math.round(value*100)/100,data:date};
-  if(kind==="receitas"){data.categoria=$("receitaCategoria").value;if(data.categoria==="Frete")data.cliente=$("receitaCliente").value.trim();}else{data.categoria=$("despesaCategoria").value;if(data.categoria==="Combustível"){const preco=Number($("despesaPrecoLitro").value);if(!Number.isFinite(preco)||preco<=0){$("despesasStatus").textContent="Informe o preço do litro.";return;}data.combustivelTipo=$("despesaCombustivelTipo").value;data.precoLitro=preco;}}
+  if(kind==="receitas"){data.categoria=$("receitaCategoria").value;if(data.categoria==="Frete")data.cliente=$("receitaCliente").value.trim();}else{data.categoria=$("despesaCategoria").value;if(data.categoria==="Combustível"){const preco=readInputMoney("despesaPrecoLitro");if(!Number.isFinite(preco)||preco<=0){$("despesasStatus").textContent="Informe o preço do litro.";return;}data.combustivelTipo=$("despesaCombustivelTipo").value;data.precoLitro=preco;}}
   const button=form.querySelector('button[type="submit"]');button.disabled=true;$(kind+"Status").textContent="Salvando…";
-  try{await withTimeout(addDoc(collection(db,"usuarios",currentUid,kind),data));form.reset();if(kind==="receitas")syncReceitaCliente();else syncFuelFields();$(prefix+"Data").value=new Date().toLocaleDateString("en-CA");$(kind+"Status").textContent="Lançamento salvo."}
+  try{await withTimeout(addDoc(collection(db,"usuarios",currentUid,kind),data));form.reset();resetInputMoney();if(kind==="receitas")syncReceitaCliente();else syncFuelFields();$(prefix+"Data").value=new Date().toLocaleDateString("en-CA");$(kind+"Status").textContent="Lançamento salvo."}
   catch(err){$(kind+"Status").textContent=err.message==="timeout"?"O banco demorou a responder. Confira a conexão e verifique se o registro foi salvo antes de tentar novamente.":"Falha ao salvar ("+(err.code||"erro de conexão")+"). Confira a conexão e as permissões.";console.warn(err)}
   finally{button.disabled=false}
  });
