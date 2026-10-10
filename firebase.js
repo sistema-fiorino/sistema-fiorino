@@ -18,7 +18,8 @@ function renderVehicle(choice){
  const next=Object.hasOwn(VEHICLES,choice)?choice:"classica";
  activeVehicle=next;
  const img=el("selectedVehicleImage");
- if(img){img.src=VEHICLES[next].src;img.alt=VEHICLES[next].label+" escolhida para o painel";}
+ if(img){img.src=VEHICLES[next].src;img.alt=VEHICLES[next].label+" escolhida para o painel";} 
+ const preview=el("pixelPreviewImage");if(preview){preview.src=VEHICLES[next].src;preview.alt="Prévia da personalização: "+VEHICLES[next].label;}
  const input=document.querySelector('input[name="vehicleOption"][value="'+next+'"]');if(input)input.checked=true;
 }
 el("applyVehicle")?.addEventListener("click",async()=>{
@@ -218,12 +219,13 @@ const pixelTuningDefaults={body:"original",tint:"0",front:"0",rear:"0"};
 const pixelColors={original:"none",vermelho:"sepia(1) saturate(4) hue-rotate(310deg)",azul:"sepia(1) saturate(3) hue-rotate(165deg)",verde:"sepia(1) saturate(3) hue-rotate(65deg)",amarelo:"sepia(1) saturate(3) hue-rotate(5deg)"};
 function applyPixelTuning(){
  const body=el("pixelBodyColor")?.value||"original",tint=Number(el("pixelWindowTint")?.value||0),front=Number(el("pixelFrontHeight")?.value||0),rear=Number(el("pixelRearHeight")?.value||0);
- const display=el("selectedVehicleImage")?.parentElement;
- if(!display)return;
- display.style.setProperty("--body-filter",pixelColors[body]||"none");
- display.style.setProperty("--window-opacity",String(tint*.11));
- display.style.setProperty("--car-angle",String((rear-front)*.65)+"deg");
- display.style.setProperty("--car-lift",String((front+rear)*-1.6)+"px");
+ const displays=[el("selectedVehicleImage")?.parentElement,el("pixelPreviewImage")?.parentElement].filter(Boolean);
+ for(const display of displays){
+  display.style.setProperty("--body-filter",pixelColors[body]||"none");
+  display.style.setProperty("--window-opacity",String(tint*.11));
+  display.style.setProperty("--car-angle",String((rear-front)*.65)+"deg");
+  display.style.setProperty("--car-lift",String((front+rear)*-1.6)+"px");
+ }
  el("pixelFrontValue").textContent=String(front);el("pixelRearValue").textContent=String(rear);
  try{localStorage.setItem("fiorino-pixel-tuning",JSON.stringify({body,tint:String(tint),front:String(front),rear:String(rear)}));}catch(e){}
 }
