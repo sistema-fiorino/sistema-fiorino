@@ -13,6 +13,7 @@ function totals(){
  const totalFretes=entries.receitas.filter(e=>!e.categoria||e.categoria==="Frete").reduce((acc,e)=>acc+Number(e.valor||0),0);
  $("fretesValorTotal").textContent=money(totalFretes);
  $("resumoReceitas").textContent=money(r);$("resumoDespesas").textContent=money(d);$("resumoSaldo").textContent=money(r-d);
+ $("outrosRecebidosTotal").textContent=money(r-totalFretes);
  $("fretesCount").textContent=String(entries.receitas.filter(e=>!e.categoria||e.categoria==="Frete").length);
 }
 function render(kind){
