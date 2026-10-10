@@ -212,3 +212,23 @@ for(const btn of document.querySelectorAll("[data-password-toggle],#toggleLoginP
  btn.innerHTML=show?'<i data-lucide="eye-off"></i>':'<i data-lucide="eye"></i>';window.lucide?.createIcons();
 });
 document.querySelectorAll("[data-logout],#headerLogoutButton").forEach(btn=>btn.addEventListener("click",async()=>{btn.disabled=true;try{await signOut(auth)}catch(e){alert("Não foi possível sair. Tente novamente.")}finally{btn.disabled=false}}));
+
+
+const pixelTuningDefaults={body:"original",tint:"0",front:"0",rear:"0"};
+const pixelColors={original:"none",vermelho:"sepia(1) saturate(4) hue-rotate(310deg)",azul:"sepia(1) saturate(3) hue-rotate(165deg)",verde:"sepia(1) saturate(3) hue-rotate(65deg)",amarelo:"sepia(1) saturate(3) hue-rotate(5deg)"};
+function applyPixelTuning(){
+ const body=el("pixelBodyColor")?.value||"original",tint=Number(el("pixelWindowTint")?.value||0),front=Number(el("pixelFrontHeight")?.value||0),rear=Number(el("pixelRearHeight")?.value||0);
+ const display=el("selectedVehicleImage")?.parentElement;
+ if(!display)return;
+ display.style.setProperty("--body-filter",pixelColors[body]||"none");
+ display.style.setProperty("--window-opacity",String(tint*.11));
+ display.style.setProperty("--car-angle",String((rear-front)*.65)+"deg");
+ display.style.setProperty("--car-lift",String((front+rear)*-1.6)+"px");
+ el("pixelFrontValue").textContent=String(front);el("pixelRearValue").textContent=String(rear);
+ try{localStorage.setItem("fiorino-pixel-tuning",JSON.stringify({body,tint:String(tint),front:String(front),rear:String(rear)}));}catch(e){}
+}
+try{const saved=JSON.parse(localStorage.getItem("fiorino-pixel-tuning")||"{}");for(const [id,key] of [["pixelBodyColor","body"],["pixelWindowTint","tint"],["pixelFrontHeight","front"],["pixelRearHeight","rear"]]){const field=el(id);if(field&&saved[key]!=null&&[...field.options||[]].some?.(o=>o.value===saved[key]))field.value=saved[key];else if(field&&field.type==="range"&&Number(saved[key])>=-3&&Number(saved[key])<=3)field.value=saved[key];}}catch(e){}
+for(const id of ["pixelBodyColor","pixelWindowTint","pixelFrontHeight","pixelRearHeight"])el(id)?.addEventListener("input",applyPixelTuning);
+el("pixelReset")?.addEventListener("click",()=>{el("pixelBodyColor").value="original";el("pixelWindowTint").value="0";el("pixelFrontHeight").value="0";el("pixelRearHeight").value="0";applyPixelTuning();});
+applyPixelTuning();
+
