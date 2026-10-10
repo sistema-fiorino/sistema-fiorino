@@ -146,6 +146,9 @@ function subscribe(user){
   stop.push(unsub);
  }
 }
+function syncReceitaCliente(){const show=$("receitaCategoria").value==="Frete";$("receitaClienteField").hidden=!show;$("receitaCliente").disabled=!show;}
+$("receitaCategoria").addEventListener("change",syncReceitaCliente);
+syncReceitaCliente();
 for(const kind of ["receitas","despesas"]){
  const form=$(kind+"Form");form.addEventListener("submit",async ev=>{
   ev.preventDefault();if(!currentUid)return;
@@ -153,9 +156,9 @@ for(const kind of ["receitas","despesas"]){
   const value=Number($(prefix+"Valor").value),description=$(prefix+"Descricao").value.trim(),date=$(prefix+"Data").value;
   if(!description||!date||!Number.isFinite(value)||value<=0)return;
   const data={descricao:description,valor:Math.round(value*100)/100,data:date};
-  if(kind==="receitas"){data.cliente=$("receitaCliente").value.trim();data.categoria=$("receitaCategoria").value;}else data.categoria=$("despesaCategoria").value;
+  if(kind==="receitas"){data.categoria=$("receitaCategoria").value;if(data.categoria==="Frete")data.cliente=$("receitaCliente").value.trim();}else data.categoria=$("despesaCategoria").value;
   const button=form.querySelector('button[type="submit"]');button.disabled=true;$(kind+"Status").textContent="Salvando…";
-  try{await withTimeout(addDoc(collection(db,"usuarios",currentUid,kind),data));form.reset();$(prefix+"Data").value=new Date().toLocaleDateString("en-CA");$(kind+"Status").textContent="Lançamento salvo."}
+  try{await withTimeout(addDoc(collection(db,"usuarios",currentUid,kind),data));form.reset();if(kind==="receitas")syncReceitaCliente();$(prefix+"Data").value=new Date().toLocaleDateString("en-CA");$(kind+"Status").textContent="Lançamento salvo."}
   catch(err){$(kind+"Status").textContent=err.message==="timeout"?"O banco demorou a responder. Confira a conexão e verifique se o registro foi salvo antes de tentar novamente.":"Falha ao salvar. Confira as regras e a criação do Firestore.";console.warn(err)}
   finally{button.disabled=false}
  });
