@@ -182,3 +182,33 @@ body.fiorino2010 #page-receitas .finance-summary .finance-metric{border-top-colo
 body.fiorino2010 #page-despesas .expense-summary .finance-metric{border-top-color:#f1b51d}
 @media(max-width:1050px){#page-despesas .expense-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){#page-despesas .expense-summary{grid-template-columns:1fr}}
+
+/* Aba Despesas: categorias fixas, filtro multi-mês e detalhe individual. */
+#page-despesas .expenses-period-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0;padding:15px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+#page-despesas .expenses-period-wrap{position:relative}
+#page-despesas .expenses-period-picker{position:absolute;top:calc(100% + 8px);left:0;width:min(340px,calc(100vw - 45px));padding:16px;border:1px solid var(--line-strong);border-radius:12px;background:var(--surface);color:var(--text);box-shadow:0 12px 32px #0003;z-index:30}
+#page-despesas .expenses-period-picker[hidden],#page-despesas .expenses-year-options[hidden]{display:none}
+#page-despesas .expenses-year-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+#page-despesas .expenses-year-options{position:absolute;right:14px;top:56px;background:var(--surface);border:1px solid var(--line-strong);border-radius:10px;padding:8px;max-height:220px;overflow-y:auto;z-index:2;display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
+#page-despesas .expenses-year{padding:8px;border:0;background:var(--surface-soft);color:var(--text);border-radius:8px}
+#page-despesas .expenses-month-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:12px 0}
+#page-despesas .expenses-month{padding:10px 3px;background:var(--surface-soft);color:var(--text);border:1px solid var(--line);border-radius:9px}
+#page-despesas .expenses-month.selected{background:var(--accent-soft);border:2px solid var(--accent);font-weight:700}
+#page-despesas #expensesApplyPeriod{width:100%}
+#page-despesas .expenses-list-heading{margin:20px 0 12px}
+#page-despesas .expenses-category-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#page-despesas .expenses-category-card{padding:18px;min-width:0;border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:12px;background:var(--surface);box-shadow:var(--shadow-sm)}
+#page-despesas .expenses-category-heading{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+#page-despesas .expenses-category-heading b{font-size:clamp(17px,2vw,24px)}
+#page-despesas .expenses-category-card small{display:block;margin:8px 0;color:var(--muted)}
+#page-despesas .expenses-category-actions{display:flex;gap:8px;margin-top:12px}
+#page-despesas .expenses-details-dialog{position:fixed;inset:0;margin:auto;width:min(760px,calc(100% - 26px));max-height:min(85vh,900px);overflow:auto;padding:24px;border:1px solid var(--line-strong);border-radius:16px;background:var(--surface);color:var(--text);box-shadow:0 18px 65px #0006}
+#page-despesas .expenses-details-dialog::backdrop{background:#0009}
+#page-despesas .expenses-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#page-despesas .expenses-details-list{display:grid;gap:10px;margin-top:16px}
+#page-despesas .expenses-detail-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px;border:1px solid var(--line);border-radius:10px;overflow-wrap:anywhere}
+#page-despesas .expenses-detail-row>div{display:grid;gap:7px;min-width:0}
+#page-despesas .expenses-detail-row>div:last-child{justify-items:end}
+#page-despesas .expenses-detail-row small{color:var(--muted)}
+body.fiorino2010 #page-despesas .expenses-category-card{border-top-color:#f1b51d}
+@media(max-width:650px){#page-despesas .expenses-category-grid{grid-template-columns:1fr}#page-despesas .expenses-period-wrap{width:100%}#page-despesas .expenses-details-dialog{padding:15px}}
