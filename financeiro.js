@@ -8,16 +8,11 @@ let entries={receitas:[],despesas:[]},stop=[],currentUid=null;
 function totals(){
  const sum=kind=>entries[kind].reduce((acc,e)=>acc+Number(e.valor||0),0);
  const r=sum("receitas"),d=sum("despesas");
- $("entradasTotal").textContent=money(r);
-
- const totalFretes=entries.receitas.filter(e=>!e.categoria||e.categoria==="Frete").reduce((acc,e)=>acc+Number(e.valor||0),0);
- $("fretesValorTotal").textContent=money(totalFretes);
  $("resumoReceitas").textContent=money(r);$("resumoDespesas").textContent=money(d);$("resumoSaldo").textContent=money(r-d);
- $("outrosRecebidosTotal").textContent=money(r-totalFretes);
- $("fretesCount").textContent=String(entries.receitas.filter(e=>!e.categoria||e.categoria==="Frete").length);
 }
 function render(kind){
  if(kind==="despesas"){renderExpenseCategories();return;}
+ if(kind==="receitas"){renderIncomeCategories();return;}
  const root=$(kind+"Lista");root.replaceChildren();
  if(!entries[kind].length){const p=document.createElement("p");p.className="muted";p.textContent="Nenhum lançamento registrado.";root.append(p);return}
  for(const item of [...entries[kind]].sort((a,b)=>b.data.localeCompare(a.data))){
@@ -85,6 +80,61 @@ function initExpensePicker(){
  setExpensePeriodStatus();
 }
 initExpensePicker();
+const incomeCategories=["Frete","Aporte de capital","Outros serviços","Venda de bens","Reembolso","Outras entradas"];
+const incomeMonths=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+let incomeDraftYear=new Date().getFullYear(),incomeDraftMonths=new Set(),incomeAppliedPeriods=null;
+const incomeDate=e=>typeof e.data==="string"?e.data:"";
+function incomeMatches(e){return incomeAppliedPeriods===null||incomeAppliedPeriods.has(incomeDate(e).slice(0,7));}
+function incomePeriodLabel(){if(incomeAppliedPeriods===null)return "Todos os meses";let keys=[...incomeAppliedPeriods].sort();return keys.length?keys.map(k=>incomeMonths[Number(k.slice(5))-1]+"/"+k.slice(0,4)).join(", "):"Nenhum mês selecionado";}
+function setIncomePeriodStatus(){ const label=incomePeriodLabel(); $("incomePeriodStatus").textContent=""; $("incomePeriodButton").textContent=label+" ▾"; $("incomePeriodButton").setAttribute("aria-label","Período selecionado: "+label+". Alterar meses");}
+function makeIncomeButton(label,className,handler){let b=document.createElement("button");b.type="button";b.textContent=label;b.className=className;b.addEventListener("click",handler);return b;}
+function incomeItemRow(item){
+ const row=document.createElement("article");row.className="income-detail-row";
+ const left=document.createElement("div"),name=document.createElement("strong"),date=document.createElement("small"),right=document.createElement("div"),amount=document.createElement("b");
+ name.textContent=item.descricao||"Sem descrição";date.textContent=incomeDate(item).split("-").reverse().join("/");amount.textContent=money(item.valor);
+ const remove=makeIncomeButton("Excluir","finance-delete",async()=>{if(!confirm("Excluir somente este lançamento?"))return;remove.disabled=true;try{await withTimeout(deleteDoc(doc(db,"usuarios",currentUid,"receitas",item.id)))}catch(err){alert("Não foi possível excluir o lançamento.");remove.disabled=false;}});
+ left.append(name,date);right.append(amount,remove);row.append(left,right);return row;
+}
+let openIncomeCategory=null;
+function fillIncomeDetails(category){
+ openIncomeCategory=category;
+ $("incomeDetailsTitle").textContent=category;
+ $("incomeDetailsPeriod").textContent="Período: "+incomePeriodLabel();
+ const list=$("incomeDetailsList");list.replaceChildren();
+ const items=entries.receitas.filter(e=>(incomeCategories.includes(e.categoria)?e.categoria:"Frete")===category&&incomeMatches(e)).sort((a,b)=>incomeDate(b).localeCompare(incomeDate(a)));
+ if(!items.length){const p=document.createElement("p");p.className="muted";p.textContent="Nenhuma receita nesse período.";list.append(p);}
+ else items.forEach(item=>list.append(incomeItemRow(item)));
+}
+function renderIncomeCategories(){
+ const root=$("receitasLista");root.replaceChildren();root.classList.add("income-category-grid");
+ for(const category of incomeCategories){
+  const items=entries.receitas.filter(e=>(incomeCategories.includes(e.categoria)?e.categoria:"Frete")===category&&incomeMatches(e));
+  const card=document.createElement("article");card.className="income-category-card";
+  const heading=document.createElement("div"),title=document.createElement("strong"),total=document.createElement("b"),note=document.createElement("small"),actions=document.createElement("div");
+  heading.className="income-category-heading";title.textContent=category;total.textContent=money(items.reduce((n,e)=>n+Number(e.valor||0),0));
+  note.textContent=items.length+" lançamento"+(items.length===1?"":"s");actions.className="income-category-actions";
+  const open=makeIncomeButton("Abrir receita","soft",()=>{$("incomeDetailsDialog").showModal();fillIncomeDetails(category);});
+  actions.append(open);heading.append(title,total);card.append(heading,note,actions);root.append(card);
+ }
+ if(openIncomeCategory&&$("incomeDetailsDialog").open)fillIncomeDetails(openIncomeCategory);
+}
+function buildIncomeMonths(){
+ $("incomeYearButton").textContent=incomeDraftYear+" ▾";
+ const root=$("incomeMonthOptions");root.replaceChildren();
+ incomeMonths.forEach((name,i)=>{const key=incomeDraftYear+"-"+String(i+1).padStart(2,"0");const b=makeIncomeButton(name,incomeDraftMonths.has(key)?"income-month selected":"income-month",()=>{if(incomeDraftMonths.has(key))incomeDraftMonths.delete(key);else incomeDraftMonths.add(key);buildIncomeMonths();});b.setAttribute("aria-pressed",String(incomeDraftMonths.has(key)));root.append(b);});
+}
+function initIncomePicker(){
+ const picker=$("incomePeriodPicker"),years=$("incomeYearOptions");
+ $("incomePeriodButton").addEventListener("click",()=>{picker.hidden=!picker.hidden;$("incomePeriodButton").setAttribute("aria-expanded",String(!picker.hidden));years.hidden=true;buildIncomeMonths();});
+ $("incomeYearButton").addEventListener("click",()=>{years.hidden=!years.hidden;$("incomeYearButton").setAttribute("aria-expanded",String(!years.hidden));if(years.hidden)return;years.replaceChildren();const current=new Date().getFullYear();for(let y=current+5;y>=current-20;y--){years.append(makeIncomeButton(String(y),"income-year",()=>{incomeDraftYear=y;years.hidden=true;buildIncomeMonths();}));}});
+ $("incomeApplyPeriod").addEventListener("click",()=>{if(!incomeDraftMonths.size){$("incomePeriodStatus").textContent="Selecione pelo menos um mês ou use Todos os meses.";return;}incomeAppliedPeriods=new Set(incomeDraftMonths);picker.hidden=true;$("incomePeriodButton").setAttribute("aria-expanded","false");setIncomePeriodStatus();renderIncomeCategories();});
+ $("incomeClearPeriod").addEventListener("click",()=>{incomeAppliedPeriods=null;incomeDraftMonths.clear();picker.hidden=true;$("incomePeriodButton").setAttribute("aria-expanded","false");setIncomePeriodStatus();renderIncomeCategories();});
+ $("incomeCloseDialog").addEventListener("click",()=>$("incomeDetailsDialog").close());
+ $("incomeDetailsDialog").addEventListener("close",()=>openIncomeCategory=null);
+ document.addEventListener("click",e=>{if(!e.composedPath().some(node=>node instanceof Element&&node.classList.contains("income-period-wrap"))){picker.hidden=true;$("incomePeriodButton").setAttribute("aria-expanded","false");years.hidden=true;}});
+ setIncomePeriodStatus();
+}
+initIncomePicker();
 
 function subscribe(user){
  stop.forEach(fn=>fn());stop=[];currentUid=user?.uid||null;entries={receitas:[],despesas:[]};totals();render("receitas");render("despesas");
