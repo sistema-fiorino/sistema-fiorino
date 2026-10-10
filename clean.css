@@ -154,3 +154,7 @@ body:not(.fiorino2010) .fiorino-vehicle-display img[src*="Vaneta Fiorino Branca 
 #page-receitas .finance-form{width:100%;max-width:none;box-sizing:border-box;}
 #page-receitas .finance-list{width:100%;max-width:none;box-sizing:border-box;}
 #page-receitas .finance-entry{width:100%;max-width:none;box-sizing:border-box;}
+
+/* Destaca a quantidade de fretes sem criar outro cartão. */
+#page-receitas .fretes-count-inline{font-size:clamp(20px,2.2vw,28px);line-height:1.2;font-weight:700;color:var(--text);margin-top:12px}
+#page-receitas .fretes-count-inline #fretesCount{font:inherit;color:inherit}
