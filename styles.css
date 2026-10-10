@@ -145,6 +145,20 @@ dialog{width:min(620px,calc(100% - 20px));max-height:calc(100dvh - 20px);overflo
 @media(min-width:900px){
   #app{padding-bottom:0}.bottom-nav{display:none}.app-shell{display:grid;grid-template-columns:230px minmax(0,1fr);transition:grid-template-columns .24s cubic-bezier(.2,.8,.2,1)}body.sidebar-collapsed .app-shell{grid-template-columns:64px minmax(0,1fr)}
   .desktop-sidebar{position:sticky;top:0;height:100dvh;display:flex;flex-direction:column;padding:17px 12px;border-right:1px solid var(--line);background:color-mix(in srgb,var(--surface) 64%,var(--bg));overflow:visible;z-index:31}.sidebar-collapsed .desktop-sidebar{padding-inline:11px}.sidebar-collapsed .sidebar-label{width:0;opacity:0;overflow:hidden;pointer-events:none}.sidebar-collapsed .sidebar-brand-row{justify-content:center;flex-direction:column;gap:10px}.sidebar-collapsed .sidebar-brand{justify-content:center}.sidebar-collapsed .sidebar-nav button,.sidebar-collapsed .sidebar-settings{justify-content:center;padding-inline:0}.sidebar-collapsed .sidebar-nav button:hover,.sidebar-collapsed .sidebar-settings:hover{transform:translateY(-1px)}
+  /* Centralizacao uniforme dos controles no menu recolhido. */
+  body.sidebar-collapsed .desktop-sidebar{padding-inline:8px}
+  body.sidebar-collapsed .sidebar-brand-row{width:100%;align-items:center;justify-content:center}
+  body.sidebar-collapsed .sidebar-brand{width:100%;justify-content:center;padding:0}
+  body.sidebar-collapsed .sidebar-brand .brand-mark{margin-inline:auto}
+  body.sidebar-collapsed .sidebar-collapse{display:grid;place-items:center;width:46px;height:40px;margin-inline:auto;padding:0}
+  body.sidebar-collapsed .sidebar-nav,
+  body.sidebar-collapsed .sidebar-footer,
+  body.sidebar-collapsed .settings-anchor{width:100%}
+  body.sidebar-collapsed .sidebar-nav button,
+  body.sidebar-collapsed .sidebar-settings{width:100%;display:flex;align-items:center;justify-content:center;gap:0;padding:9px 0;text-align:center}
+  body.sidebar-collapsed .sidebar-nav button svg,
+  body.sidebar-collapsed .sidebar-settings > svg:first-child{margin-inline:0;flex-shrink:0}
+  body.sidebar-collapsed .sidebar-label{display:none}
   .topbar{padding-inline:28px;height:76px}.layout{padding:22px 28px 34px}.app-main{min-width:0}main{padding:5px 0 30px;min-height:calc(100dvh - 112px)}#notice{bottom:18px;left:auto;right:18px;max-width:420px}
   .grid-home{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr)}.settings-grid{grid-template-columns:1fr 1fr}.grid-home>.quadrant:nth-child(2){grid-column:2;grid-row:1 / span 2}
   .summary{grid-template-columns:minmax(0,1.55fr) repeat(2,minmax(0,.72fr));gap:12px}.balance-card{grid-column:auto;min-height:225px}.income-card,.expense-card{min-height:225px}.mini-card>strong{font-size:29px}.balance-card>strong{font-size:42px}.entry-list li{padding:14px}
