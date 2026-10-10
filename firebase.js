@@ -29,9 +29,15 @@ function ensureClassicLayers(image){
  svg.classList.add("fiorino-classic-layers");
  // Primeiro os pneus (fixos), depois o chassi recortado (móvel).
  svg.innerHTML=`<defs>
- <clipPath id="fiorino-wheels-${id}" clipPathUnits="userSpaceOnUse"><ellipse cx="323" cy="722" rx="118" ry="128"/><ellipse cx="1266" cy="722" rx="116" ry="127"/></clipPath>
- <mask id="fiorino-body-${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="1672" height="941"><rect width="1672" height="941" fill="white"/><ellipse cx="323" cy="722" rx="118" ry="128" fill="black"/><ellipse cx="1266" cy="722" rx="116" ry="127" fill="black"/></mask>
- </defs>
+ <clipPath id="fiorino-wheels-${id}" clipPathUnits="userSpaceOnUse">
+ <path d="M 326 604 C 265 603 213 648 211 710 C 205 782 247 843 318 849 C 390 850 435 804 437 739 C 443 673 402 607 326 604 Z"/>
+ <path d="M 1267 600 C 1202 600 1153 650 1151 716 C 1147 792 1192 844 1264 847 C 1336 849 1380 798 1382 727 C 1384 657 1340 600 1267 600 Z"/>
+ </clipPath>
+ <mask id="fiorino-body-${id}" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="1672" height="941">
+ <rect width="1672" height="941" fill="white"/>
+ <path d="M 326 604 C 265 603 213 648 211 710 C 205 782 247 843 318 849 C 390 850 435 804 437 739 C 443 673 402 607 326 604 Z" fill="black"/>
+ <path d="M 1267 600 C 1202 600 1153 650 1151 716 C 1147 792 1192 844 1264 847 C 1336 849 1380 798 1382 727 C 1384 657 1340 600 1267 600 Z" fill="black"/>
+ </mask></defs>
  <image class="fiorino-fixed-wheels" href="assets/Vaneta Fiorino Branca em Pixel Art.png" width="1672" height="941" clip-path="url(#fiorino-wheels-${id})"/>
  <g class="fiorino-moving-body" mask="url(#fiorino-body-${id})"><image href="assets/Vaneta Fiorino Branca em Pixel Art.png" width="1672" height="941"/></g>`;
  host.append(svg);
@@ -255,8 +261,16 @@ function applyPixelTuning(){
  for(const display of displays){
   display.style.setProperty("--body-filter",pixelColors[body]||"none");
   display.style.setProperty("--window-opacity",String(tint*.11));
-  display.style.setProperty("--car-angle",String((front-rear)*.65)+"deg");
-  display.style.setProperty("--car-lift",String((front+rear)*-1.6)+"px");
+  // Na clássica, translação do eixo traseiro + rotação rígida entre eixos:
+  // a altura em x=326 depende apenas de front, e em x=1267 apenas de rear.
+  // Rotação NÃO deforma nem estica os pixels da imagem.
+  const frontPixels=front*3.2,rearPixels=rear*3.2;
+  const angle=Math.atan2(frontPixels-rearPixels,941)*180/Math.PI;
+  display.style.setProperty("--car-angle",String(angle)+"deg");
+  display.style.setProperty("--car-lift",String(-rearPixels)+"px");
+  // A moderna permanece usando a renderização anterior.
+  const classicBody=display.querySelector(".fiorino-moving-body");
+  if(classicBody)classicBody.setAttribute("transform","translate(0 "+(-rearPixels)+") rotate("+angle+" 1267 721)");
  }
  el("pixelFrontValue").textContent=String(front);el("pixelRearValue").textContent=String(rear);
  try{localStorage.setItem("fiorino-pixel-tuning",JSON.stringify({body,tint:String(tint),front:String(front),rear:String(rear)}));}catch(e){}
