@@ -10,6 +10,10 @@ function totals(){
  const r=sum("receitas"),d=sum("despesas");
  $("entradasTotal").textContent=money(r);
  $("despesasTotal").textContent=money(d);
+ const categoriasDespesas={"Combustível":"combustivel","Manutenção":"manutencao","Alimentação":"alimentacao","Seguro":"seguro","Pedágio":"pedagio","Impostos e taxas":"impostos","Outros":"outros"};
+ const subtotalDespesas={};
+ for(const e of entries.despesas){const chave=categoriasDespesas[e.categoria]||"outros";subtotalDespesas[chave]=(subtotalDespesas[chave]||0)+Number(e.valor||0)}
+ for(const id of Object.values(categoriasDespesas))$("despesas-"+id).textContent=money(subtotalDespesas[id]||0);
  const totalFretes=entries.receitas.filter(e=>!e.categoria||e.categoria==="Frete").reduce((acc,e)=>acc+Number(e.valor||0),0);
  $("fretesValorTotal").textContent=money(totalFretes);
  $("resumoReceitas").textContent=money(r);$("resumoDespesas").textContent=money(d);$("resumoSaldo").textContent=money(r-d);
