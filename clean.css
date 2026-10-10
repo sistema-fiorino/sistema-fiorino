@@ -261,3 +261,11 @@ body.fiorino2010 #page-receitas .income-category-card{border-top-color:#f1b51d}
 /* Editar e Excluir lado a lado, mantendo o valor acima. */
 #page-receitas .income-detail-row .finance-detail-actions,#page-despesas .expenses-detail-row .finance-detail-actions{display:flex;flex-direction:row;align-items:center;justify-content:flex-end;gap:8px;min-width:0;flex-wrap:nowrap}
 .finance-detail-actions .finance-edit-button,.finance-detail-actions .finance-delete{white-space:nowrap;flex:0 0 auto}
+
+/* Personalização pixel art: prévia não destrutiva e local, em imagens únicas. */
+.pixel-tuning{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px;padding:16px;border:1px solid var(--line);border-radius:12px}
+.pixel-tuning h3,.pixel-tuning p{grid-column:1/-1;margin:0}.pixel-tuning label{display:grid;gap:7px;font-size:13px}.pixel-tuning select,.pixel-tuning input{width:100%}.pixel-tuning output{font-size:12px}.pixel-tuning button{justify-self:start}
+.fiorino-vehicle-display{--body-filter:none;--car-angle:0deg;--car-lift:0px;--window-opacity:0;position:relative}
+.fiorino-vehicle-display img{filter:var(--body-filter) drop-shadow(7px 10px 3px #0008);transform:translateY(var(--car-lift)) rotate(var(--car-angle));transform-origin:50% 75%;image-rendering:pixelated}
+.fiorino-vehicle-display::after{content:"";position:absolute;pointer-events:none;left:24%;right:10%;top:18%;height:28%;background:#091a31;opacity:var(--window-opacity);mix-blend-mode:multiply;clip-path:polygon(5% 65%,20% 7%,78% 7%,96% 65%,96% 96%,5% 96%);transform:translateY(var(--car-lift)) rotate(var(--car-angle))}
+@media(max-width:650px){.pixel-tuning{grid-template-columns:1fr}}
