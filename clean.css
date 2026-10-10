@@ -212,3 +212,8 @@ body.fiorino2010 #page-despesas .expense-summary .finance-metric{border-top-colo
 #page-despesas .expenses-detail-row small{color:var(--muted)}
 body.fiorino2010 #page-despesas .expenses-category-card{border-top-color:#f1b51d}
 @media(max-width:650px){#page-despesas .expenses-category-grid{grid-template-columns:1fr}#page-despesas .expenses-period-wrap{width:100%}#page-despesas .expenses-details-dialog{padding:15px}}
+
+/* Mostra o período aplicado imediatamente acima do seletor de meses. */
+#page-despesas .expenses-period-wrap{display:flex;flex-direction:column;align-items:flex-start;gap:5px}
+#page-despesas .expenses-current-period{display:block;max-width:min(360px,calc(100vw - 50px));font-size:12px;font-weight:700;color:var(--text);line-height:1.4;overflow-wrap:anywhere}
+#page-despesas .expenses-period-toolbar>#expensesPeriodStatus:empty{display:none}
