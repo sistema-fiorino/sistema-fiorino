@@ -252,3 +252,6 @@ body.fiorino2010 #page-receitas .income-category-card{border-top-color:#f1b51d}
 
 /* Frete em destaque na primeira linha; demais receitas em duas colunas. */
 #page-receitas .income-category-grid > .income-category-card:first-child{grid-column:1/-1}
+
+#page-despesas .fuel-only-field[hidden]{display:none!important}
+.fuel-best-prices{margin-top:24px}.fuel-best-prices h2{font-size:19px}.fuel-best-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}.fuel-best-card{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:12px;padding:18px;display:grid;gap:9px}.fuel-best-card b{font-size:22px}.fuel-best-card p{margin:0;color:var(--muted);overflow-wrap:anywhere}body.fiorino2010 .fuel-best-card{border-top-color:#f1b51d}@media(max-width:650px){.fuel-best-grid{grid-template-columns:1fr}}
