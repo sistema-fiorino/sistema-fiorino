@@ -81,7 +81,7 @@ function initExpensePicker(){
  $("expensesClearPeriod").addEventListener("click",()=>{expenseAppliedPeriods=null;expenseDraftMonths.clear();picker.hidden=true;$("expensesPeriodButton").setAttribute("aria-expanded","false");setExpensePeriodStatus();renderExpenseCategories();});
  $("expensesCloseDialog").addEventListener("click",()=>$("expensesDetailsDialog").close());
  $("expensesDetailsDialog").addEventListener("close",()=>openExpenseCategory=null);
- document.addEventListener("click",e=>{if(!e.target.closest(".expenses-period-wrap")){picker.hidden=true;$("expensesPeriodButton").setAttribute("aria-expanded","false");years.hidden=true;}});
+ document.addEventListener("click",e=>{if(!e.composedPath().some(node=>node instanceof Element&&node.classList.contains("expenses-period-wrap"))){picker.hidden=true;$("expensesPeriodButton").setAttribute("aria-expanded","false");years.hidden=true;}});
  setExpensePeriodStatus();
 }
 initExpensePicker();
