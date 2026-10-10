@@ -8,7 +8,7 @@ let entries={receitas:[],despesas:[]},stop=[],currentUid=null;
 function totals(){
  const sum=kind=>entries[kind].reduce((acc,e)=>acc+Number(e.valor||0),0);
  const r=sum("receitas"),d=sum("despesas");
- $("resumoReceitas").textContent=money(r);$("resumoDespesas").textContent=money(d);$("resumoSaldo").textContent=money(r-d);
+ $("resumoReceitas").textContent=money(r);$("resumoDespesas").textContent=money(d);$("resumoSaldo").textContent=money(r-d);renderFuelBestPrices();
 }
 function render(kind){
  if(kind==="despesas"){renderExpenseCategories();return;}
@@ -146,6 +146,28 @@ function subscribe(user){
   stop.push(unsub);
  }
 }
+function renderFuelBestPrices(){
+ const root=$("fuelBestPrices");root.replaceChildren();
+ for(const tipo of ["Gasolina","Etanol"]){
+  const matches=entries.despesas.filter(e=>e.categoria==="Combustível"&&e.combustivelTipo===tipo&&Number(e.precoLitro)>0&&e.descricao?.trim());
+  const card=document.createElement("article");card.className="fuel-best-card";
+  const title=document.createElement("strong"),detail=document.createElement("p"),price=document.createElement("b");
+  title.textContent=tipo;
+  if(matches.length){const best=matches.reduce((a,b)=>Number(a.precoLitro)<=Number(b.precoLitro)?a:b);price.textContent=money(best.precoLitro)+"/L";detail.textContent=best.descricao+" • "+(best.data||"").split("-").reverse().join("/");}
+  else{price.textContent="Sem registros";detail.textContent="Cadastre um abastecimento com preço por litro.";}
+  card.append(title,price,detail);root.append(card);
+ }
+}
+function syncFuelFields(){
+ const fuel=$("despesaCategoria").value==="Combustível";
+ $("despesaDescricaoLabel").textContent=fuel?"Nome do posto":"Descrição";
+ $("despesaDescricao").placeholder=fuel?"Ex.: Posto Marajó":"Ex.: Descrição";
+ document.querySelectorAll("#despesasForm .fuel-only-field").forEach(el=>el.hidden=!fuel);
+ for(const id of ["despesaCombustivelTipo","despesaPrecoLitro"])$(id).disabled=!fuel;
+ $("despesaPrecoLitro").required=fuel;
+}
+$("despesaCategoria").addEventListener("change",syncFuelFields);
+syncFuelFields();
 function syncReceitaCliente(){const show=$("receitaCategoria").value==="Frete";$("receitaClienteField").hidden=!show;$("receitaCliente").disabled=!show;}
 $("receitaCategoria").addEventListener("change",syncReceitaCliente);
 syncReceitaCliente();
@@ -156,9 +178,9 @@ for(const kind of ["receitas","despesas"]){
   const value=Number($(prefix+"Valor").value),description=$(prefix+"Descricao").value.trim(),date=$(prefix+"Data").value;
   if(!description||!date||!Number.isFinite(value)||value<=0)return;
   const data={descricao:description,valor:Math.round(value*100)/100,data:date};
-  if(kind==="receitas"){data.categoria=$("receitaCategoria").value;if(data.categoria==="Frete")data.cliente=$("receitaCliente").value.trim();}else data.categoria=$("despesaCategoria").value;
+  if(kind==="receitas"){data.categoria=$("receitaCategoria").value;if(data.categoria==="Frete")data.cliente=$("receitaCliente").value.trim();}else{data.categoria=$("despesaCategoria").value;if(data.categoria==="Combustível"){const preco=Number($("despesaPrecoLitro").value);if(!Number.isFinite(preco)||preco<=0){$("despesasStatus").textContent="Informe o preço do litro.";return;}data.combustivelTipo=$("despesaCombustivelTipo").value;data.precoLitro=preco;}}
   const button=form.querySelector('button[type="submit"]');button.disabled=true;$(kind+"Status").textContent="Salvando…";
-  try{await withTimeout(addDoc(collection(db,"usuarios",currentUid,kind),data));form.reset();if(kind==="receitas")syncReceitaCliente();$(prefix+"Data").value=new Date().toLocaleDateString("en-CA");$(kind+"Status").textContent="Lançamento salvo."}
+  try{await withTimeout(addDoc(collection(db,"usuarios",currentUid,kind),data));form.reset();if(kind==="receitas")syncReceitaCliente();else syncFuelFields();$(prefix+"Data").value=new Date().toLocaleDateString("en-CA");$(kind+"Status").textContent="Lançamento salvo."}
   catch(err){$(kind+"Status").textContent=err.message==="timeout"?"O banco demorou a responder. Confira a conexão e verifique se o registro foi salvo antes de tentar novamente.":"Falha ao salvar. Confira as regras e a criação do Firestore.";console.warn(err)}
   finally{button.disabled=false}
  });
