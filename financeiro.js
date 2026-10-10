@@ -38,7 +38,7 @@ function expenseItemRow(item){
  const left=document.createElement("div"),name=document.createElement("strong"),date=document.createElement("small"),right=document.createElement("div"),amount=document.createElement("b");
  name.textContent=item.descricao||"Sem descrição";date.textContent=expenseDate(item).split("-").reverse().join("/");if(item.categoria==="Combustível"&&Number(item.precoLitro)>0)date.textContent+=" • "+money(item.precoLitro)+"/litro";amount.textContent=money(item.valor);
  const remove=makeExpenseButton("Excluir","finance-delete",async()=>{if(!confirm("Excluir somente este lançamento?"))return;remove.disabled=true;try{await withTimeout(deleteDoc(doc(db,"usuarios",currentUid,"despesas",item.id)))}catch(err){alert("Não foi possível excluir o lançamento.");remove.disabled=false;}});
- const edit=document.createElement("button");edit.type="button";edit.className="soft";edit.textContent="Editar";edit.addEventListener("click",()=>openEditEntry("despesas",item));
+ const edit=document.createElement("button");edit.type="button";edit.className="finance-edit-button";edit.textContent="Editar";edit.addEventListener("click",()=>openEditEntry("despesas",item));
  left.append(name,date);right.append(amount,edit,remove);row.append(left,right);return row;
 }
 let openExpenseCategory=null;
@@ -94,7 +94,7 @@ function incomeItemRow(item){
  const left=document.createElement("div"),name=document.createElement("strong"),date=document.createElement("small"),right=document.createElement("div"),amount=document.createElement("b");
  name.textContent=item.descricao||"Sem descrição";date.textContent=incomeDate(item).split("-").reverse().join("/");if((!item.categoria||item.categoria==="Frete")&&item.cliente?.trim())date.textContent+=" • Cliente: "+item.cliente.trim();amount.textContent=money(item.valor);
  const remove=makeIncomeButton("Excluir","finance-delete",async()=>{if(!confirm("Excluir somente este lançamento?"))return;remove.disabled=true;try{await withTimeout(deleteDoc(doc(db,"usuarios",currentUid,"receitas",item.id)))}catch(err){alert("Não foi possível excluir o lançamento.");remove.disabled=false;}});
- const edit=document.createElement("button");edit.type="button";edit.className="soft";edit.textContent="Editar";edit.addEventListener("click",()=>openEditEntry("receitas",item));
+ const edit=document.createElement("button");edit.type="button";edit.className="finance-edit-button";edit.textContent="Editar";edit.addEventListener("click",()=>openEditEntry("receitas",item));
  left.append(name,date);right.append(amount,edit,remove);row.append(left,right);return row;
 }
 let openIncomeCategory=null;
@@ -197,8 +197,8 @@ function editField(name,label,value,opts={}){
  const wrapper=document.createElement("label");wrapper.className="finance-edit-field";wrapper.textContent=label;
  let input;
  if(opts.options){input=document.createElement("select");for(const option of opts.options){const el=document.createElement("option");el.value=option;el.textContent=option;input.append(el);}}
- else {input=document.createElement("input");input.type=opts.type||"text";if(opts.type==="number"){input.step=opts.step||"0.01";input.min="0.01";}if(opts.maxLength)input.maxLength=opts.maxLength;}
- input.name=name;input.value=value??"";if(opts.required)input.required=true;wrapper.append(input);return wrapper;
+ else {input=document.createElement("input");input.type=opts.type||"text";if(opts.type==="number"){input.step=opts.step||"0.01";input.min="0.01";}if(opts.money){input.type="text";input.inputMode="numeric";input.autocomplete="off";input.value=(Math.round(Number(value||0)*100)/100).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});input.addEventListener("input",()=>{const digits=input.value.replace(/\D/g,"").slice(-11);input.value=(Number(digits||"0")/100).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});input.setSelectionRange(input.value.length,input.value.length);});}if(opts.maxLength)input.maxLength=opts.maxLength;}
+ input.name=name;if(!opts.money)input.value=value??"";if(opts.required)input.required=true;wrapper.append(input);return wrapper;
 }
 function openEditEntry(kind,item){
  editEntryContext={kind,id:item.id,original:item};
@@ -208,9 +208,9 @@ function openEditEntry(kind,item){
  if(kind==="receitas" && (!item.categoria||item.categoria==="Frete"))fields.append(editField("cliente","Cliente (opcional)",item.cliente||"",{maxLength:100}));
  if(kind==="despesas" && item.categoria==="Combustível"){
   fields.append(editField("combustivelTipo","Tipo de combustível",item.combustivelTipo||"Gasolina",{options:["Gasolina","Etanol"]}));
-  fields.append(editField("precoLitro","Preço por litro (R$)",item.precoLitro??"",{type:"number",step:"any",required:true}));
+  fields.append(editField("precoLitro","Preço por litro (R$)",item.precoLitro??"",{money:true,required:true}));
  }
- fields.append(editField("valor","Valor (R$)",item.valor,{type:"number",required:true}));
+ fields.append(editField("valor","Valor (R$)",item.valor,{money:true,required:true}));
  fields.append(editField("data","Data",item.data,{type:"date",required:true}));
  $("financeEditStatus").textContent="";
  editDialog.showModal();
@@ -219,8 +219,9 @@ editForm.addEventListener("submit",async event=>{
  event.preventDefault();
  if(!editEntryContext||!currentUid)return;
  const {kind,id,original}=editEntryContext,values=Object.fromEntries(new FormData(editForm));
- const valor=Number(values.valor),preco=Number(values.precoLitro);
- if(!values.descricao?.trim()||!/^\\d{4}-\\d{2}-\\d{2}$/.test(values.data)||!Number.isFinite(valor)||valor<=0||valor>=1000000000){$("financeEditStatus").textContent="Confira descrição, valor e data.";return;}
+ const parseMoney=value=>Number((value||"").replace(/\D/g,"")||"0")/100;
+ const valor=parseMoney(values.valor),preco=parseMoney(values.precoLitro);
+ if(!values.descricao?.trim()||!/^\d{4}-\d{2}-\d{2}$/.test(values.data)||!Number.isFinite(valor)||valor<=0||valor>=1000000000){$("financeEditStatus").textContent="Confira descrição, valor e data.";return;}
  if(original.categoria==="Combustível"&&(!Number.isFinite(preco)||preco<=0||preco>=1000)){$("financeEditStatus").textContent="Informe um preço por litro válido.";return;}
  const changes={descricao:values.descricao.trim(),valor:Math.round(valor*100)/100,data:values.data};
  if(kind==="receitas"&&(!original.categoria||original.categoria==="Frete"))changes.cliente=values.cliente?.trim()||"";
