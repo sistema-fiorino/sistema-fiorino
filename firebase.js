@@ -228,7 +228,7 @@ function applyPixelTuning(){
  for(const display of displays){
   display.style.setProperty("--body-filter",pixelColors[body]||"none");
   display.style.setProperty("--window-opacity",String(tint*.11));
-  display.style.setProperty("--car-angle",String((rear-front)*.65)+"deg");
+  display.style.setProperty("--car-angle",String((front-rear)*.65)+"deg");
   display.style.setProperty("--car-lift",String((front+rear)*-1.6)+"px");
  }
  el("pixelFrontValue").textContent=String(front);el("pixelRearValue").textContent=String(rear);
