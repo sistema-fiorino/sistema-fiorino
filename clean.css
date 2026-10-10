@@ -292,6 +292,13 @@ body:not(.fiorino2010) .fiorino-vehicle-display img[src*="Vaneta Fiorino Branca 
 .fiorino-vehicle-display.vehicle-modern-facing-left img,
 body.fiorino2010 .fiorino-vehicle-display.vehicle-modern-facing-left img,
 body:not(.fiorino2010) .fiorino-vehicle-display.vehicle-modern-facing-left img{
- transform:translateY(var(--car-lift,0px)) rotate(var(--car-angle,0deg)) scaleX(-1) scale(1.35);
+ transform:translateY(var(--car-lift,0px)) rotate(var(--car-angle,0deg)) scaleX(-1) scale(1.02);
  transform-origin:50% 75%;
 }
+
+/* Miniatura da Fiorino moderna: frente para a esquerda, igual ao painel. */
+.vehicle-option input[value="moderna"] + img{transform:scaleX(-1);transform-origin:center center}
+/* Impede que o carro sobreponha o título na prévia; mantém área própria. */
+.pixel-tuning .pixel-preview{isolation:isolate}
+.pixel-tuning .pixel-preview .fiorino-vehicle-display{height:190px;min-height:190px;overflow:hidden}
+.pixel-tuning .pixel-preview .fiorino-vehicle-display img{max-height:150px;max-width:85%;width:auto;height:auto}
