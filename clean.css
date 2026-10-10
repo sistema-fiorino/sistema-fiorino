@@ -292,7 +292,7 @@ body:not(.fiorino2010) .fiorino-vehicle-display img[src*="Vaneta Fiorino Branca 
 .fiorino-vehicle-display.vehicle-modern-facing-left img,
 body.fiorino2010 .fiorino-vehicle-display.vehicle-modern-facing-left img,
 body:not(.fiorino2010) .fiorino-vehicle-display.vehicle-modern-facing-left img{
- transform:translateY(var(--car-lift,0px)) rotate(var(--car-angle,0deg)) scaleX(-1) scale(1.02);
+ transform:translateY(var(--car-lift,0px)) rotate(var(--car-angle,0deg)) scaleX(-1) scale(1.07);
  transform-origin:50% 75%;
 }
 
