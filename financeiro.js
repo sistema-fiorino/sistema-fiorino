@@ -36,7 +36,7 @@ function makeExpenseButton(label,className,handler){let b=document.createElement
 function expenseItemRow(item){
  const row=document.createElement("article");row.className="expenses-detail-row";
  const left=document.createElement("div"),name=document.createElement("strong"),date=document.createElement("small"),right=document.createElement("div"),amount=document.createElement("b");
- name.textContent=item.descricao||"Sem descrição";date.textContent=expenseDate(item).split("-").reverse().join("/");amount.textContent=money(item.valor);
+ name.textContent=item.descricao||"Sem descrição";date.textContent=expenseDate(item).split("-").reverse().join("/");if(item.categoria==="Combustível"&&Number(item.precoLitro)>0)date.textContent+=" • "+money(item.precoLitro)+"/litro";amount.textContent=money(item.valor);
  const remove=makeExpenseButton("Excluir","finance-delete",async()=>{if(!confirm("Excluir somente este lançamento?"))return;remove.disabled=true;try{await withTimeout(deleteDoc(doc(db,"usuarios",currentUid,"despesas",item.id)))}catch(err){alert("Não foi possível excluir o lançamento.");remove.disabled=false;}});
  left.append(name,date);right.append(amount,remove);row.append(left,right);return row;
 }
