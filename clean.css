@@ -269,3 +269,8 @@ body.fiorino2010 #page-receitas .income-category-card{border-top-color:#f1b51d}
 .fiorino-vehicle-display img{filter:var(--body-filter) drop-shadow(7px 10px 3px #0008);transform:translateY(var(--car-lift)) rotate(var(--car-angle));transform-origin:50% 75%;image-rendering:pixelated}
 .fiorino-vehicle-display::after{content:"";position:absolute;pointer-events:none;left:24%;right:10%;top:18%;height:28%;background:#091a31;opacity:var(--window-opacity);mix-blend-mode:multiply;clip-path:polygon(5% 65%,20% 7%,78% 7%,96% 65%,96% 96%,5% 96%);transform:translateY(var(--car-lift)) rotate(var(--car-angle))}
 @media(max-width:650px){.pixel-tuning{grid-template-columns:1fr}}
+
+/* Prévia da personalização na própria área de configurações */
+.pixel-tuning .pixel-preview{grid-column:1/-1;display:grid;justify-items:center;gap:10px;padding:18px 12px;border-radius:12px;background:var(--surface-soft);border:1px solid var(--line);overflow:hidden;width:100%}
+.pixel-tuning .pixel-preview .fiorino-vehicle-display{width:min(100%,420px);min-height:180px;align-self:center;display:flex;align-items:center;justify-content:center}
+.pixel-tuning .pixel-preview .fiorino-vehicle-display img{max-height:180px;object-fit:contain}
