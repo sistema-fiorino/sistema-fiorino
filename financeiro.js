@@ -9,12 +9,9 @@ function totals(){
  const sum=kind=>entries[kind].reduce((acc,e)=>acc+Number(e.valor||0),0);
  const r=sum("receitas"),d=sum("despesas");
  $("entradasTotal").textContent=money(r);
- const aporte=entries.receitas.filter(e=>e.categoria==="Aporte de capital").reduce((acc,e)=>acc+Number(e.valor||0),0);
- const operacionais=entries.receitas.filter(e=>!["Aporte de capital","Reembolso"].includes(e.categoria)).reduce((acc,e)=>acc+Number(e.valor||0),0);
- $("receitasTotal").textContent=money(operacionais);$("despesasTotal").textContent=money(d);
+ $("despesasTotal").textContent=money(d);
  const totalFretes=entries.receitas.filter(e=>!e.categoria||e.categoria==="Frete").reduce((acc,e)=>acc+Number(e.valor||0),0);
  $("fretesValorTotal").textContent=money(totalFretes);
- $("aportesTotal").textContent=money(aporte);
  $("resumoReceitas").textContent=money(r);$("resumoDespesas").textContent=money(d);$("resumoSaldo").textContent=money(r-d);
  $("fretesCount").textContent=String(entries.receitas.filter(e=>!e.categoria||e.categoria==="Frete").length);
 }
