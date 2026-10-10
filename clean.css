@@ -315,10 +315,8 @@ body:not(.fiorino2010) .fiorino-vehicle-display.vehicle-modern-facing-left img{
  filter:drop-shadow(7px 10px 3px #0007);
  image-rendering:pixelated;
 }
-.fiorino-vehicle-display .fiorino-classic-layers .fiorino-moving-body{
- /* Transformação geométrica aplicada pelo SVG, ancorada nos eixos das rodas. */
- transform:none;
-}
+/* Sem propriedade CSS transform na camada móvel: o atributo SVG transform
+   é controlado pelo ajuste de altura e não pode ser sobrescrito. */
 /* O filtro atual é só uma simulação; não recolorimos os pneus fixos. */
 .fiorino-vehicle-display .fiorino-classic-layers .fiorino-moving-body image{filter:var(--body-filter,none)}
 .pixel-tuning .pixel-preview .fiorino-classic-layers{

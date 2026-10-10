@@ -59,6 +59,7 @@ function renderVehicle(choice){
  }
  const input=document.querySelector('input[name="vehicleOption"][value="'+next+'"]');
  if(input)input.checked=true;
+ applyPixelTuning();
 }
 el("applyVehicle")?.addEventListener("click",async()=>{
  const user=auth.currentUser,btn=el("applyVehicle"),status=el("vehicleStatus");
