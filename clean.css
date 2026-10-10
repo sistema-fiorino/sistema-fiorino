@@ -174,3 +174,11 @@ body.fiorino2010 #page-receitas .finance-summary .finance-metric{border-top-colo
 #page-despesas .finance-fields input,#page-despesas .finance-fields select{width:100%;min-width:0;box-sizing:border-box}
 @media(max-width:1100px){#page-despesas .finance-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){#page-despesas .finance-fields{grid-template-columns:1fr}}
+
+/* Despesas por categoria em 2 linhas de 4 cartoes no desktop */
+#page-despesas .expense-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:none;width:100%}
+#page-despesas .expense-summary .finance-metric{min-width:0;min-height:0;padding:17px 16px;border-top:4px solid var(--accent)}
+#page-despesas .expense-summary .finance-metric strong{font-size:clamp(18px,1.8vw,26px);overflow-wrap:anywhere}
+body.fiorino2010 #page-despesas .expense-summary .finance-metric{border-top-color:#f1b51d}
+@media(max-width:1050px){#page-despesas .expense-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){#page-despesas .expense-summary{grid-template-columns:1fr}}
