@@ -286,3 +286,12 @@ body:not(.fiorino2010) .fiorino-vehicle-display img[src*="Vaneta Fiorino Branca 
  filter:var(--body-filter,none) drop-shadow(7px 10px 3px #0008);
  image-rendering:pixelated;
 }
+
+/* Fiorino moderna: espelhamento horizontal, escala e suspensão combinados.
+   Usa a mesma classe na Visão geral e na prévia das Configurações. */
+.fiorino-vehicle-display.vehicle-modern-facing-left img,
+body.fiorino2010 .fiorino-vehicle-display.vehicle-modern-facing-left img,
+body:not(.fiorino2010) .fiorino-vehicle-display.vehicle-modern-facing-left img{
+ transform:translateY(var(--car-lift,0px)) rotate(var(--car-angle,0deg)) scaleX(-1) scale(1.35);
+ transform-origin:50% 75%;
+}
