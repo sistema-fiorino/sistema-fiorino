@@ -166,3 +166,11 @@ body:not(.fiorino2010) .fiorino-vehicle-display img[src*="Vaneta Fiorino Branca 
 /* Restaura a borda superior na cor do tema, sem alterar as demais bordas. */
 #page-receitas .finance-summary .finance-metric{border-top:4px solid var(--accent)}
 body.fiorino2010 #page-receitas .finance-summary .finance-metric{border-top-color:#f1b51d}
+
+/* Despesas: formulário largo e quatro campos alinhados */
+#page-despesas .finance-form,#page-despesas .finance-list,#page-despesas .finance-entry{width:100%;max-width:none;box-sizing:border-box}
+#page-despesas .finance-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 16px;align-items:start}
+#page-despesas .finance-fields>div{min-width:0}
+#page-despesas .finance-fields input,#page-despesas .finance-fields select{width:100%;min-width:0;box-sizing:border-box}
+@media(max-width:1100px){#page-despesas .finance-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){#page-despesas .finance-fields{grid-template-columns:1fr}}
