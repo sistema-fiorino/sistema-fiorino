@@ -31,7 +31,7 @@ let expenseDraftYear=new Date().getFullYear(),expenseDraftMonths=new Set(),expen
 const expenseDate=e=>typeof e.data==="string"?e.data:"";
 function expenseMatches(e){return expenseAppliedPeriods===null||expenseAppliedPeriods.has(expenseDate(e).slice(0,7));}
 function expensePeriodLabel(){if(expenseAppliedPeriods===null)return "Todos os meses";let keys=[...expenseAppliedPeriods].sort();return keys.length?keys.map(k=>expenseMonths[Number(k.slice(5))-1]+"/"+k.slice(0,4)).join(", "):"Nenhum mês selecionado";}
-function setExpensePeriodStatus(){ const label=expensePeriodLabel(); $("expensesPeriodStatus").textContent=""; $("expensesPeriodButton").textContent=label+" ▾"; $("expensesPeriodButton").setAttribute("aria-label","Período selecionado: "+label+". Alterar meses");}
+function setExpensePeriodStatus(){ const label=expensePeriodLabel(); $("expensesPeriodStatus").textContent=""; $("expensesPeriodButton").textContent=(expenseAppliedPeriods===null?"Selecionar mês":label)+" ▾"; $("expensesPeriodButton").setAttribute("aria-label",expenseAppliedPeriods===null?"Selecionar mês":"Período selecionado: "+label+". Alterar meses");}
 function makeExpenseButton(label,className,handler){let b=document.createElement("button");b.type="button";b.textContent=label;b.className=className;b.addEventListener("click",handler);return b;}
 function expenseItemRow(item){
  const row=document.createElement("article");row.className="expenses-detail-row";
@@ -86,7 +86,7 @@ let incomeDraftYear=new Date().getFullYear(),incomeDraftMonths=new Set(),incomeA
 const incomeDate=e=>typeof e.data==="string"?e.data:"";
 function incomeMatches(e){return incomeAppliedPeriods===null||incomeAppliedPeriods.has(incomeDate(e).slice(0,7));}
 function incomePeriodLabel(){if(incomeAppliedPeriods===null)return "Todos os meses";let keys=[...incomeAppliedPeriods].sort();return keys.length?keys.map(k=>incomeMonths[Number(k.slice(5))-1]+"/"+k.slice(0,4)).join(", "):"Nenhum mês selecionado";}
-function setIncomePeriodStatus(){ const label=incomePeriodLabel(); $("incomePeriodStatus").textContent=""; $("incomePeriodButton").textContent=label+" ▾"; $("incomePeriodButton").setAttribute("aria-label","Período selecionado: "+label+". Alterar meses");}
+function setIncomePeriodStatus(){ const label=incomePeriodLabel(); $("incomePeriodStatus").textContent=""; $("incomePeriodButton").textContent=(incomeAppliedPeriods===null?"Selecionar mês":label)+" ▾"; $("incomePeriodButton").setAttribute("aria-label",incomeAppliedPeriods===null?"Selecionar mês":"Período selecionado: "+label+". Alterar meses");}
 function makeIncomeButton(label,className,handler){let b=document.createElement("button");b.type="button";b.textContent=label;b.className=className;b.addEventListener("click",handler);return b;}
 function incomeItemRow(item){
  const row=document.createElement("article");row.className="income-detail-row";
