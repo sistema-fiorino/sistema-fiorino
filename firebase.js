@@ -27,26 +27,27 @@ function ensureClassicLayers(image){
  svg.setAttribute("preserveAspectRatio","xMidYMid meet");
  svg.setAttribute("aria-label","Fiorino clássica com carroceria ajustável e rodas fixas");
  svg.classList.add("fiorino-classic-layers");
- // Três camadas alinhadas à arte original: fundo móvel, pneus fixos e lataria móvel.
- // Os dois conjuntos móveis recebem a mesma transformação rígida da suspensão.
+ // Os pneus são recortados integralmente da arte original e nunca recebem transform.
+ // Fundo escuro limitado à região interna do paralama (não ultrapassa o capô).
  svg.innerHTML=`<defs>
  <clipPath id="fiorino-wheels-${id}" clipPathUnits="userSpaceOnUse">
-   <ellipse cx="322" cy="720" rx="132" ry="139"/>
-   <ellipse cx="1266" cy="718" rx="137" ry="140"/>
+   <path d="M 322 594 C 248 594 204 650 204 722 C 204 802 251 849 322 850 C 395 850 440 796 440 725 C 440 645 390 594 322 594 Z"/>
+   <path d="M 1266 590 C 1194 590 1147 649 1147 721 C 1147 802 1194 850 1266 850 C 1341 850 1382 801 1382 722 C 1382 650 1338 590 1266 590 Z"/>
  </clipPath>
  <mask id="fiorino-body-${id}" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="1672" height="941">
    <rect width="1672" height="941" fill="white"/>
-   <ellipse cx="322" cy="720" rx="132" ry="139" fill="black"/>
-   <ellipse cx="1266" cy="718" rx="137" ry="140" fill="black"/>
-   <!-- Impede as sobras inferiores dos pneus de seguirem junto com a lataria. -->
-   <rect x="185" y="745" width="278" height="196" fill="black"/>
-   <rect x="1124" y="745" width="286" height="196" fill="black"/>
- </mask></defs>
- <g class="fiorino-moving-wheel-wells">
-   <path d="M 183 781 L 183 657 Q 197 492 322 492 Q 462 492 469 663 L 473 783 Z" fill="#191b20"/>
-   <path d="M 1116 781 L 1116 653 Q 1132 489 1266 489 Q 1415 489 1417 667 L 1417 783 Z" fill="#191b20"/>
+   <path d="M 322 594 C 248 594 204 650 204 722 C 204 802 251 849 322 850 C 395 850 440 796 440 725 C 440 645 390 594 322 594 Z" fill="black"/>
+   <path d="M 1266 590 C 1194 590 1147 649 1147 721 C 1147 802 1194 850 1266 850 C 1341 850 1382 801 1382 722 C 1382 650 1338 590 1266 590 Z" fill="black"/>
+ </mask>
+ </defs>
+ <!-- Caixa de roda atrás do pneu; seu topo fica ABAIXO da linha de paralama. -->
+ <g class="fiorino-moving-wheel-wells" fill="#18191c">
+   <path d="M 206 749 L 206 694 C 214 636 258 603 322 603 C 388 603 431 638 435 695 L 435 750 Z"/>
+   <path d="M 1149 749 L 1149 689 C 1158 631 1201 600 1266 600 C 1334 600 1375 634 1380 694 L 1380 749 Z"/>
  </g>
+ <!-- Pneus imóveis, independentes da suspensão. -->
  <image class="fiorino-fixed-wheels" href="assets/Vaneta Fiorino Branca em Pixel Art.png" width="1672" height="941" clip-path="url(#fiorino-wheels-${id})"/>
+ <!-- Peças pintadas, faróis e demais detalhes mantidos no original. -->
  <g class="fiorino-moving-body" mask="url(#fiorino-body-${id})"><image href="assets/Vaneta Fiorino Branca em Pixel Art.png" width="1672" height="941"/></g>`;
  host.append(svg);
  return svg;
