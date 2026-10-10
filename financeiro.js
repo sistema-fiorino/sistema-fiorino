@@ -91,7 +91,7 @@ function makeIncomeButton(label,className,handler){let b=document.createElement(
 function incomeItemRow(item){
  const row=document.createElement("article");row.className="income-detail-row";
  const left=document.createElement("div"),name=document.createElement("strong"),date=document.createElement("small"),right=document.createElement("div"),amount=document.createElement("b");
- name.textContent=item.descricao||"Sem descrição";date.textContent=incomeDate(item).split("-").reverse().join("/");amount.textContent=money(item.valor);
+ name.textContent=item.descricao||"Sem descrição";date.textContent=incomeDate(item).split("-").reverse().join("/");if((!item.categoria||item.categoria==="Frete")&&item.cliente?.trim())date.textContent+=" • Cliente: "+item.cliente.trim();amount.textContent=money(item.valor);
  const remove=makeIncomeButton("Excluir","finance-delete",async()=>{if(!confirm("Excluir somente este lançamento?"))return;remove.disabled=true;try{await withTimeout(deleteDoc(doc(db,"usuarios",currentUid,"receitas",item.id)))}catch(err){alert("Não foi possível excluir o lançamento.");remove.disabled=false;}});
  left.append(name,date);right.append(amount,remove);row.append(left,right);return row;
 }
